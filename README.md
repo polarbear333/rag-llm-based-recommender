@@ -12,6 +12,10 @@ The chatbot provides:
 - Sentiment analysis of product reviews
 - Contextual recommendations
 
+![Website](pages_files/images/website.png)
+
+![Chatbox](pages_files/images/chatbox.png)
+
 ## System Architecture
 
 The project is built on Google Cloud Platform (GCP) with a microservices architecture:

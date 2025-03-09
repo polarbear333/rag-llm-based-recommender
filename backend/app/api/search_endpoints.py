@@ -46,3 +46,10 @@ async def hybrid_search(
     except Exception as e:
         logger.error(f"API error: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+
+# Add this to search_endpoints.py
+@router.get("/test")
+async def test_endpoint():
+    logger.info("Test endpoint called")
+    return {"status": "ok", "message": "API is responding correctly"}

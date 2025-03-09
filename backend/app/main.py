@@ -27,3 +27,13 @@ app.include_router(sentiment_endpoints.router, dependencies=[Depends(get_rag_pip
 @app.get("/")
 async def read_root():
     return {"message": "Product Search and Recommendation API"}
+
+@app.on_event("startup")
+async def startup_event():
+    logging.info("Application starting up, checking dependencies...")
+    try:
+        search_service = get_search_service_dep()
+        rag_pipeline = get_rag_pipeline_dep()
+        logging.info("Dependencies initialized successfully")
+    except Exception as e:
+        logging.error(f"Failed to initialize dependencies: {str(e)}")
