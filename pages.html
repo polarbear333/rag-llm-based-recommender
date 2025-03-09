@@ -1,0 +1,1639 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.6.40">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Matthew Chan">
+<meta name="dcterms.date" content="2025-03-05">
+<meta name="description" content=" Explore a smarter way to shop online with this full-stack project deployed on Google Cloud Platform. We combine using vector search in a Retrieval Augmented Generation (RAG) system, LLMs, and sentiment analysis to create a chatbot that delivers product recommendations and insightful review summaries. This project showcases the power of integrating ML techniques with cloud infrastructure to build an intelligent and user-friendly e-commerce experience. ">
+
+<title>AI-Powered E-commerce Chatbot with Vector Search and LLM Integration</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+/* CSS for citations */
+div.csl-bib-body { }
+div.csl-entry {
+  clear: both;
+  margin-bottom: 0em;
+}
+.hanging-indent div.csl-entry {
+  margin-left:2em;
+  text-indent:-2em;
+}
+div.csl-left-margin {
+  min-width:2em;
+  float:left;
+}
+div.csl-right-inline {
+  margin-left:2em;
+  padding-left:1em;
+}
+div.csl-indent {
+  margin-left: 2em;
+}</style>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous"></script><script src="pages_files/libs/clipboard/clipboard.min.js"></script>
+<script src="pages_files/libs/quarto-html/quarto.js"></script>
+<script src="pages_files/libs/quarto-html/popper.min.js"></script>
+<script src="pages_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="pages_files/libs/quarto-html/anchor.min.js"></script>
+<link href="pages_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="pages_files/libs/quarto-html/quarto-syntax-highlighting-549806ee2085284f45b00abea8c6df48.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="pages_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="pages_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="pages_files/libs/bootstrap/bootstrap-077f4e475657bbb824c8349d40bb8999.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+<script src="pages_files/libs/quarto-diagram/mermaid.min.js"></script>
+<script src="pages_files/libs/quarto-diagram/mermaid-init.js"></script>
+<link href="pages_files/libs/quarto-diagram/mermaid.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" integrity="sha512-c3Nl8+7g4LMSTdrm621y7kf9v3SDPnhxLNhcjFJbKECVnmZHTdo+IRO05sNLTH/D3vA6u1X32ehoLC7WFVdheg==" crossorigin="anonymous"></script>
+
+<script type="application/javascript">define('jquery', [],function() {return window.jQuery;})</script>
+
+  <script src="https://cdnjs.cloudflare.com/polyfill/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
+
+</head>
+
+<body>
+
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">AI-Powered E-commerce Chatbot with Vector Search and LLM Integration</h1>
+                  <div>
+        <div class="description">
+          <p><span style="font-size: 18pt; line-height: 1.6; display: block; margin-top: 20px; margin-bottom: 20px;"> Explore a smarter way to shop online with this full-stack project deployed on Google Cloud Platform. We combine using vector search in a Retrieval Augmented Generation (RAG) system, LLMs, and sentiment analysis to create a chatbot that delivers product recommendations and insightful review summaries. This project showcases the power of integrating ML techniques with cloud infrastructure to build an intelligent and user-friendly e-commerce experience. </span></p>
+        </div>
+      </div>
+                </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Matthew Chan </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">March 5, 2025</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#final-project-overview" id="toc-final-project-overview" class="nav-link active" data-scroll-target="#final-project-overview"><span class="header-section-number">1</span> Final Project Overview</a></li>
+  <li><a href="#motivation" id="toc-motivation" class="nav-link" data-scroll-target="#motivation"><span class="header-section-number">2</span> Motivation</a>
+  <ul class="collapse">
+  <li><a href="#background-on-the-application-area" id="toc-background-on-the-application-area" class="nav-link" data-scroll-target="#background-on-the-application-area"><span class="header-section-number">2.1</span> <strong>Background on the Application Area:</strong></a></li>
+  <li><a href="#our-solution-to-the-specific-problem" id="toc-our-solution-to-the-specific-problem" class="nav-link" data-scroll-target="#our-solution-to-the-specific-problem"><span class="header-section-number">2.2</span> <strong>Our solution to the specific problem:</strong></a></li>
+  <li><a href="#video-showcasing-the-demo-of-the-website-and-functionality" id="toc-video-showcasing-the-demo-of-the-website-and-functionality" class="nav-link" data-scroll-target="#video-showcasing-the-demo-of-the-website-and-functionality"><span class="header-section-number">2.3</span> Video showcasing the demo of the website and functionality:</a></li>
+  </ul></li>
+  <li><a href="#system-design-and-architecture" id="toc-system-design-and-architecture" class="nav-link" data-scroll-target="#system-design-and-architecture"><span class="header-section-number">3</span> System Design and Architecture</a>
+  <ul class="collapse">
+  <li><a href="#data-pipeline" id="toc-data-pipeline" class="nav-link" data-scroll-target="#data-pipeline"><span class="header-section-number">3.1</span> 1. <strong>Data Pipeline:</strong></a></li>
+  <li><a href="#backend-services-fastapi" id="toc-backend-services-fastapi" class="nav-link" data-scroll-target="#backend-services-fastapi"><span class="header-section-number">3.2</span> 2. <strong>Backend Services (FastAPI):</strong></a></li>
+  <li><a href="#frontend-reactnext.js" id="toc-frontend-reactnext.js" class="nav-link" data-scroll-target="#frontend-reactnext.js"><span class="header-section-number">3.3</span> 3. <strong>Frontend (React/Next.js):</strong></a></li>
+  <li><a href="#gcp-infrastructure" id="toc-gcp-infrastructure" class="nav-link" data-scroll-target="#gcp-infrastructure"><span class="header-section-number">3.4</span> 4. <strong>GCP Infrastructure:</strong></a></li>
+  </ul></li>
+  <li><a href="#implementation-details" id="toc-implementation-details" class="nav-link" data-scroll-target="#implementation-details"><span class="header-section-number">4</span> Implementation Details</a>
+  <ul class="collapse">
+  <li><a href="#data-preprocessing" id="toc-data-preprocessing" class="nav-link" data-scroll-target="#data-preprocessing"><span class="header-section-number">4.1</span> Data Preprocessing:</a></li>
+  <li><a href="#etl-and-data-storage-bigquery" id="toc-etl-and-data-storage-bigquery" class="nav-link" data-scroll-target="#etl-and-data-storage-bigquery"><span class="header-section-number">4.2</span> ETL and Data Storage (BigQuery):</a></li>
+  <li><a href="#embedding-model" id="toc-embedding-model" class="nav-link" data-scroll-target="#embedding-model"><span class="header-section-number">4.3</span> Embedding Model:</a></li>
+  <li><a href="#vector-search-implementation" id="toc-vector-search-implementation" class="nav-link" data-scroll-target="#vector-search-implementation"><span class="header-section-number">4.4</span> Vector Search Implementation:</a></li>
+  <li><a href="#large-language-model" id="toc-large-language-model" class="nav-link" data-scroll-target="#large-language-model"><span class="header-section-number">4.5</span> Large Language Model</a></li>
+  <li><a href="#chatbox-interface" id="toc-chatbox-interface" class="nav-link" data-scroll-target="#chatbox-interface"><span class="header-section-number">4.6</span> Chatbox Interface</a></li>
+  </ul></li>
+  <li><a href="#mathematical-foundations-and-optimization" id="toc-mathematical-foundations-and-optimization" class="nav-link" data-scroll-target="#mathematical-foundations-and-optimization"><span class="header-section-number">5</span> Mathematical Foundations and Optimization</a>
+  <ul class="collapse">
+  <li><a href="#vector-embeddings-and-semantic-representation" id="toc-vector-embeddings-and-semantic-representation" class="nav-link" data-scroll-target="#vector-embeddings-and-semantic-representation"><span class="header-section-number">5.1</span> Vector Embeddings and Semantic Representation</a></li>
+  <li><a href="#properties-of-the-embedding-space" id="toc-properties-of-the-embedding-space" class="nav-link" data-scroll-target="#properties-of-the-embedding-space"><span class="header-section-number">5.2</span> Properties of the Embedding Space</a></li>
+  <li><a href="#loss-functions-for-training-embeddings" id="toc-loss-functions-for-training-embeddings" class="nav-link" data-scroll-target="#loss-functions-for-training-embeddings"><span class="header-section-number">5.3</span> Loss Functions for Training Embeddings</a></li>
+  </ul></li>
+  <li><a href="#vector-search-algorithms" id="toc-vector-search-algorithms" class="nav-link" data-scroll-target="#vector-search-algorithms"><span class="header-section-number">6</span> Vector Search Algorithms</a>
+  <ul class="collapse">
+  <li><a href="#mathematical-principles-of-vector-search" id="toc-mathematical-principles-of-vector-search" class="nav-link" data-scroll-target="#mathematical-principles-of-vector-search"><span class="header-section-number">6.1</span> Mathematical Principles of Vector Search</a></li>
+  <li><a href="#approximate-nearest-neighbor-ann-search-algorithms" id="toc-approximate-nearest-neighbor-ann-search-algorithms" class="nav-link" data-scroll-target="#approximate-nearest-neighbor-ann-search-algorithms"><span class="header-section-number">6.2</span> Approximate Nearest Neighbor (ANN) Search Algorithms</a></li>
+  </ul></li>
+  <li><a href="#scann-scalable-nearest-neighbors" id="toc-scann-scalable-nearest-neighbors" class="nav-link" data-scroll-target="#scann-scalable-nearest-neighbors"><span class="header-section-number">7</span> ScaNN (Scalable Nearest Neighbors)</a></li>
+  <li><a href="#evaluation-and-results" id="toc-evaluation-and-results" class="nav-link" data-scroll-target="#evaluation-and-results"><span class="header-section-number">8</span> Evaluation and Results</a>
+  <ul class="collapse">
+  <li><a href="#evaluation-metrics" id="toc-evaluation-metrics" class="nav-link" data-scroll-target="#evaluation-metrics"><span class="header-section-number">8.1</span> Evaluation Metrics</a></li>
+  <li><a href="#results-and-analysis" id="toc-results-and-analysis" class="nav-link" data-scroll-target="#results-and-analysis"><span class="header-section-number">8.2</span> Results and Analysis</a></li>
+  <li><a href="#areas-for-improvement" id="toc-areas-for-improvement" class="nav-link" data-scroll-target="#areas-for-improvement"><span class="header-section-number">8.3</span> Areas for Improvement</a></li>
+  </ul></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">9</span> Conclusion</a></li>
+  <li><a href="#references" id="toc-references" class="nav-link" data-scroll-target="#references"><span class="header-section-number">10</span> References</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pages_files/images/product_recommendations.png" class="img-fluid figure-img"></p>
+<figcaption>Source: GrowForce</figcaption>
+</figure>
+</div>
+<section id="final-project-overview" class="level2" data-number="1">
+<h2 data-number="1" class="anchored" data-anchor-id="final-project-overview"><span class="header-section-number">1</span> Final Project Overview</h2>
+<p>For this final project, I will be aiming to build a product recommender system for a E-commerce website that features vector searching for relevant products and reviews search based on user queries, and leveraging LLMs on key feature extraction and sentiment reviews. The project is aimed to enhance the customer shopping experience by applying machine learning techniques to essentially help users discover products they might not have found on their own along with tailored content and recommendation to potentially increase sales for businesses.</p>
+<p>Here is an image of the layout for my website:</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pages_files/images/website.png" class="img-fluid figure-img"></p>
+<figcaption>Interface of the E-commerce website</figcaption>
+</figure>
+</div>
+</section>
+<section id="motivation" class="level2" data-number="2">
+<h2 data-number="2" class="anchored" data-anchor-id="motivation"><span class="header-section-number">2</span> Motivation</h2>
+<section id="background-on-the-application-area" class="level3" data-number="2.1">
+<h3 data-number="2.1" class="anchored" data-anchor-id="background-on-the-application-area"><span class="header-section-number">2.1</span> <strong>Background on the Application Area:</strong></h3>
+<p>E-commerce platform has witness exponential growth over the past decades, like Amazon, eBay and even oversea companies like Alibaba. This leads to a highly competitive market in the industry where online retailers face the challenge of differentiating themselves and capturing customer attention. The saturation in the market also leads to overwhelming volume of products online, making it difficult for customers to find what they need.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pages_files/images/Hybrid-Systems.png" class="img-fluid figure-img"></p>
+<figcaption>Figure 1: Sales growth and revenue of big tech companies using data-driven systems</figcaption>
+</figure>
+</div>
+</section>
+<section id="our-solution-to-the-specific-problem" class="level3" data-number="2.2">
+<h3 data-number="2.2" class="anchored" data-anchor-id="our-solution-to-the-specific-problem"><span class="header-section-number">2.2</span> <strong>Our solution to the specific problem:</strong></h3>
+<p>As a result, the need of implementing efficient information retrieval and personalized customer experiences are increasing to drive up sales and customer satisfaction. Traditional searching methods like keyword-based search and collaborative filtering either struggles with natural language queries or data sparsity problem where new users haven’t provided enough data to make meaningful recommendations. Hence our solution to effectively address the shortcomings of traditional methods is to use vector searching with text embedding models to allow for semantic searches, and using LLMs to summarize and extract key information from existing data, making it easier to identify relevant products even with limited user data.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pages_files/images/chat_query.png" class="img-fluid figure-img"></p>
+<figcaption>An example of the product recommendation in result on user end</figcaption>
+</figure>
+</div>
+</section>
+<section id="video-showcasing-the-demo-of-the-website-and-functionality" class="level3" data-number="2.3">
+<h3 data-number="2.3" class="anchored" data-anchor-id="video-showcasing-the-demo-of-the-website-and-functionality"><span class="header-section-number">2.3</span> Video showcasing the demo of the website and functionality:</h3>
+<hr>
+<div class="quarto-video ratio ratio-16x9"><iframe data-external="1" src="https://www.youtube.com/embed/law4PuYcIUM" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen=""></iframe></div>
+</section>
+</section>
+<section id="system-design-and-architecture" class="level2" data-number="3">
+<h2 data-number="3" class="anchored" data-anchor-id="system-design-and-architecture"><span class="header-section-number">3</span> System Design and Architecture</h2>
+<p>We will be aiming to build a near production-grade infrastructure that reassembles a real-life E-commerce platform along with our AI-based product recommendation system. Due to time constraints given for our project, our goal is to emulate the core architectural elements found in real-life platforms, designing the frontend, backend and using cloud-based infrastructures to create a system with scalability and efficiency. While we might not deploy extra components in the given timeframe, we have strived to create a comprehensive and functional system as a practical exploration and learning experience.</p>
+<div class="cell" data-fig-width="7" data-layout-align="default">
+<div class="cell-output-display">
+<div id="fig-newwgtadj" class="quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-fig figure">
+<div aria-describedby="fig-newwgtadj-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div>
+<pre class="mermaid mermaid-js" data-label="fig-newwgtadj">flowchart TD
+    subgraph DataPipeline["Data Pipeline"]
+        A[HuggingFace Dataset] --&gt; B[PySpark ETL]
+        B -- Parquet Files --&gt; C[(GCS Bucket)]
+        C --&gt; D[BigQuery Tables]
+        D --&gt; E[Vertex AI Embeddings]
+        E --&gt; F[(Product Vector Index)]
+        E --&gt; G[(Review Vector Index)]
+    end
+
+    subgraph Backend["Backend Services (FastAPI)"]
+        H[User Query] --&gt; I[Auth Middleware]
+        I --&gt; J[CORS Middleware]
+        J --&gt; K[Rate Limiter]
+        K --&gt; L{/search Endpoint}
+        L --&gt; M[Generate Query Embedding]
+        M --&gt; N[BigQuery Vector Search]
+        N -- Products --&gt; F
+        N -- Reviews --&gt; G
+        N --&gt; O[RAG Pipeline]
+        O --&gt; P[LangChain Context Assembly]
+        P --&gt; Q[Vertex AI LLM/Gemini]
+        Q --&gt; R[Formatted Recommendations]
+    end
+
+    subgraph Frontend["React Frontend (Next.js)"]
+        direction TB
+        S[Chat Interface] --&gt;|useState/useReducer| T[Message State]
+        T --&gt; U[Render Product Cards]
+        U --&gt; V[Display Recommendations]
+        
+        subgraph Networking["API Communication"]
+            W[Axios Instance] --&gt;|POST /search| L
+            W --&gt;|GET /api/scrape-image| X[Image Scraper]
+            X --&gt;|ASIN| Y[Product Images]
+        end
+
+        subgraph Components["UI Components"]
+            U --&gt; Z[ProductCard.tsx]
+            Z --&gt;|useEffect| AA[Image Fetching]
+            Z --&gt;|ReactMarkdown| BB[Feature Bullets]
+            Z --&gt;|useMemo| CC[Rating Calc]
+        end
+
+        subgraph NextJS["Next.js Features"]
+            DD[API Routes] --&gt; X
+            EE[Server-side Rendering] --&gt; Z
+            FF[Middleware] --&gt; GG[CORS Handling]
+        end
+    end
+
+    subgraph Infrastructure["GCP Infrastructure"]
+        HH[Terraform] --&gt; II[Cloud Run]
+        HH --&gt; JJ[Cloud Functions]
+        HH --&gt; KK[BigQuery]
+        LL[Cloud Monitoring] --&gt; II
+        LL --&gt; JJ
+    end
+
+    S -- POST Query --&gt; H
+    R -- JSON Response --&gt; U
+    II --&gt;|Hosts| Backend
+    JJ --&gt;|Embedding Gen| E
+    KK --&gt;|Vector Indexes| F &amp; G
+
+    classDef cluster fill:#f7f7f7,stroke:#666,stroke-width:2px;
+    class DataPipeline,Backend,Frontend,Infrastructure cluster;
+    classDef component fill:#e3f2fd,stroke:#2196f3;
+    class Networking,Components,NextJS component;
+</pre>
+</div>
+</div>
+<figcaption class="quarto-float-caption-bottom quarto-float-caption quarto-float-fig" id="fig-newwgtadj-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Figure&nbsp;1: System design flow graph for our system
+</figcaption>
+</figure>
+</div>
+</div>
+</div>
+<section id="data-pipeline" class="level3" data-number="3.1">
+<h3 data-number="3.1" class="anchored" data-anchor-id="data-pipeline"><span class="header-section-number">3.1</span> 1. <strong>Data Pipeline:</strong></h3>
+<p>The data pipeline begins by using the Amazon Reviews dataset collected in 2023 by UCSD McAuley Lab (Further EDA will be conducted in next section). Due to the sheer size of the total dataset (571.54M rows of reviews, 54.51M for products), we will be only extracting the <code>All_Beauty</code>, <code>Software</code>, and <code>Baby_Products</code> category for development.</p>
+<p>This dataset is then processed using PySpark for Extract, Transform, and Load (ETL) operations using user defined functions for data cleaning, and stored as Parquet files in a Google Cloud Storage (GCS) bucket for efficient storage and retrieval. These Parquet files are then loaded into BigQuery tables to provide a structured and scalable data warehouse.</p>
+<p>To enable semantic search, product and review data from BigQuery are transformed into vector embeddings using Vertex AI Embeddings. These embeddings are then stored in separate vector indices within BigQuery, designated as <code>Product Vector Index</code> and <code>Review Vector Index</code>. This allows for fast and accurate similarity searches based on semantic meaning.</p>
+</section>
+<section id="backend-services-fastapi" class="level3" data-number="3.2">
+<h3 data-number="3.2" class="anchored" data-anchor-id="backend-services-fastapi"><span class="header-section-number">3.2</span> 2. <strong>Backend Services (FastAPI):</strong></h3>
+<p>The backend is built using FastAPI, which is a high performance web framework for building HTTP-based service in Python. The main usage of the backend system is to manage and process data on the server-side of our recommendation chatbox. We created a <code>/search</code> API endpoint that handles user queries as they enter something through the chatbox, and acts as a transition layer to our product recommendation functionality. The backend also incorporates several middleware layers for security and performance:</p>
+<ul>
+<li><p><strong>Authentication Middleware:</strong> Ensures that only authenticated users can access the API.</p></li>
+<li><p><strong>CORS Middleware:</strong> Manages Cross-Origin Resource Sharing, allowing the frontend to communicate with the backend.</p></li>
+<li><p><strong>Rate Limiter:</strong> Prevents abuse and ensures fair usage of the API.</p></li>
+</ul>
+<p>The backend is essentially the backbone of our product recommendation system as it handles everything between our model in Google Cloud Platform (GCP) and sending it to client. How it functions is upon receiving a user message, the backend generates a query embedding using Vertex AI Embeddings to perform vector search along with our generated product and review embeddings on the server side, where we can retrieve relevant products and reviews from their respective vector indices.</p>
+<p>Upon receiving the relevant results, we would pass it along our Retrieval Augmented Generation (RAG) pipeline. We will be using a framework called LangChain for content assembly, and organizing the retrieved product information and review data into a suitable format for the LLM. The Vertex AI LLM (Gemini-2.0-Flash) is used to generate formatted recommendations based on the assembled context. The final recommendations are returned to the frontend as a JSON response.</p>
+</section>
+<section id="frontend-reactnext.js" class="level3" data-number="3.3">
+<h3 data-number="3.3" class="anchored" data-anchor-id="frontend-reactnext.js"><span class="header-section-number">3.3</span> 3. <strong>Frontend (React/Next.js):</strong></h3>
+<p>The frontend is developed using React with next.js for a clear interface. It incorporates a E-commerce web page, along with core componenets like our chat interface and overlay.The user query is sent to the backend via an Axios instance using a POST request to the <code>/search</code> endpoint.</p>
+<p>The frontend renders product cards based on the JSON response from the backend. These cards are created using <code>ProductCard.tsx</code> component and display product details, generated features (rendered using <code>ReactMarkdown</code>), and calculated ratings (using <code>useMemo</code>). Product images are fetched asynchronously usinga an image scraper API route in Next.js that parses an Amazon’s product imaging using the retrieved <code>asin</code> product number and title.</p>
+</section>
+<section id="gcp-infrastructure" class="level3" data-number="3.4">
+<h3 data-number="3.4" class="anchored" data-anchor-id="gcp-infrastructure"><span class="header-section-number">3.4</span> 4. <strong>GCP Infrastructure:</strong></h3>
+<p>The entire infrastructure is deployed and managed on Google Cloud Platform (GCP). Terraform is used for Infrastructure as Code (IaC), which enables consistent and repeatable deployments of Cloud Run for hosting the backend, Cloud Run functions for embedding generation, and BigQuery as our database. Cloud Monitoring is used to monitor the health and performance of the deployed services.</p>
+<p><strong>Key Architectural Implementations:</strong></p>
+<ul>
+<li><p><strong>Vector Search:</strong> Enables semantic search, improving the accuracy and relevance of product recommendations.</p></li>
+<li><p><strong>Generative LLMs:</strong> Provides natural language understanding and personalized recommendations.</p></li>
+<li><p><strong>Microservices Architecture:</strong> The backend is designed as a set of microservices, allowing for independent scaling and maintenance.</p></li>
+</ul>
+</section>
+</section>
+<section id="implementation-details" class="level2" data-number="4">
+<h2 data-number="4" class="anchored" data-anchor-id="implementation-details"><span class="header-section-number">4</span> Implementation Details</h2>
+<section id="data-preprocessing" class="level3" data-number="4.1">
+<h3 data-number="4.1" class="anchored" data-anchor-id="data-preprocessing"><span class="header-section-number">4.1</span> Data Preprocessing:</h3>
+<p>Before diving into the main project, we’ll start with a preliminary look at the <code>All_ Beauty</code> from the Amazon Reviews 2023 dataset provided by UCSD’s McAuley Lab <span class="citation" data-cites="mcaulab_amazon_reviews_2023">(<a href="#ref-mcaulab_amazon_reviews_2023" role="doc-biblioref">McAuley-Lab 2023</a>)</span>. Since the full dataset is quite large, we’ll focus our initial exploration (EDA) on this specific category instead of total columns I’m using for the project.</p>
+<div id="60198fb6" class="cell" data-execution_count="1">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> datasets <span class="im">import</span> load_dataset</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>categories <span class="op">=</span> [<span class="st">'All_Beauty'</span>]</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">#Load User Reviews</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>reviews <span class="op">=</span> load_dataset(<span class="st">"McAuley-Lab/Amazon-Reviews-2023"</span>, <span class="st">"raw_review_All_Beauty"</span>,split<span class="op">=</span><span class="st">"full"</span>, trust_remote_code<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">#Item Metadata</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>metadata <span class="op">=</span> load_dataset(<span class="st">"McAuley-Lab/Amazon-Reviews-2023"</span>, <span class="st">"raw_meta_All_Beauty"</span>, split<span class="op">=</span><span class="st">"full"</span>, trust_remote_code<span class="op">=</span><span class="va">True</span>)</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> pandas <span class="im">as</span> pd</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> matplotlib.pyplot <span class="im">as</span> plt</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="im">import</span> seaborn <span class="im">as</span> sns</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>metadata_df <span class="op">=</span> metadata.to_pandas()</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>reviews_df <span class="op">=</span> reviews.to_pandas()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<div id="486e8d6c" class="cell" data-execution_count="2">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>metadata_df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="2">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">main_category</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">average_rating</th>
+<th data-quarto-table-cell-role="th">rating_number</th>
+<th data-quarto-table-cell-role="th">features</th>
+<th data-quarto-table-cell-role="th">description</th>
+<th data-quarto-table-cell-role="th">price</th>
+<th data-quarto-table-cell-role="th">images</th>
+<th data-quarto-table-cell-role="th">videos</th>
+<th data-quarto-table-cell-role="th">store</th>
+<th data-quarto-table-cell-role="th">categories</th>
+<th data-quarto-table-cell-role="th">details</th>
+<th data-quarto-table-cell-role="th">parent_asin</th>
+<th data-quarto-table-cell-role="th">bought_together</th>
+<th data-quarto-table-cell-role="th">subtitle</th>
+<th data-quarto-table-cell-role="th">author</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>All Beauty</td>
+<td>Howard LC0008 Leather Conditioner, 8-Ounce (4-...</td>
+<td>4.8</td>
+<td>10</td>
+<td>[]</td>
+<td>[]</td>
+<td>None</td>
+<td>{'hi_res': [None, 'https://m.media-amazon.com/...</td>
+<td>{'title': [], 'url': [], 'user_id': []}</td>
+<td>Howard Products</td>
+<td>[]</td>
+<td>{"Package Dimensions": "7.1 x 5.5 x 3 inches; ...</td>
+<td>B01CUPMQZE</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>All Beauty</td>
+<td>Yes to Tomatoes Detoxifying Charcoal Cleanser ...</td>
+<td>4.5</td>
+<td>3</td>
+<td>[]</td>
+<td>[]</td>
+<td>None</td>
+<td>{'hi_res': ['https://m.media-amazon.com/images...</td>
+<td>{'title': [], 'url': [], 'user_id': []}</td>
+<td>Yes To</td>
+<td>[]</td>
+<td>{"Item Form": "Powder", "Skin Type": "Acne Pro...</td>
+<td>B076WQZGPM</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>All Beauty</td>
+<td>Eye Patch Black Adult with Tie Band (6 Per Pack)</td>
+<td>4.4</td>
+<td>26</td>
+<td>[]</td>
+<td>[]</td>
+<td>None</td>
+<td>{'hi_res': [None, None], 'large': ['https://m....</td>
+<td>{'title': [], 'url': [], 'user_id': []}</td>
+<td>Levine Health Products</td>
+<td>[]</td>
+<td>{"Manufacturer": "Levine Health Products"}</td>
+<td>B000B658RI</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>All Beauty</td>
+<td>Tattoo Eyebrow Stickers, Waterproof Eyebrow, 4...</td>
+<td>3.1</td>
+<td>102</td>
+<td>[]</td>
+<td>[]</td>
+<td>None</td>
+<td>{'hi_res': ['https://m.media-amazon.com/images...</td>
+<td>{'title': [], 'url': [], 'user_id': []}</td>
+<td>Cherioll</td>
+<td>[]</td>
+<td>{"Brand": "Cherioll", "Item Form": "Powder", "...</td>
+<td>B088FKY3VD</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>All Beauty</td>
+<td>Precision Plunger Bars for Cartridge Grips – 9...</td>
+<td>4.3</td>
+<td>7</td>
+<td>[Material: 304 Stainless Steel; Brass tip, Len...</td>
+<td>[The Precision Plunger Bars are designed to wo...</td>
+<td>None</td>
+<td>{'hi_res': [None], 'large': ['https://m.media-...</td>
+<td>{'title': [], 'url': [], 'user_id': []}</td>
+<td>Precision</td>
+<td>[]</td>
+<td>{"UPC": "644287689178"}</td>
+<td>B07NGFDN6G</td>
+<td>None</td>
+<td>None</td>
+<td>None</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Based on the head of the dataframe, we can see multiple entries with curly brackets around them, which suggests they are likely to be stored as python dictionaries. The square bracket also suggests that they are stored as python list or numpy arrays. We can also see their are some entries disappearing in the <code>features</code> and <code>description</code> column, and <code>None</code> being stored in <code>bought_together</code>, <code>subtitle</code>, <code>author</code> columns, which we should do an analysis later on the missing data. It also seems to include a <code>images</code> column with url to the image but most aren’t reachable. We would likely have to scrape the product website alternatively to fetch the images.</p>
+<div id="0415e09c" class="cell" data-execution_count="3">
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>reviews_df.head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="3">
+<div>
+
+
+<table class="dataframe caption-top table table-sm table-striped small" data-quarto-postprocess="true" data-border="1">
+<thead>
+<tr class="header">
+<th data-quarto-table-cell-role="th"></th>
+<th data-quarto-table-cell-role="th">rating</th>
+<th data-quarto-table-cell-role="th">title</th>
+<th data-quarto-table-cell-role="th">text</th>
+<th data-quarto-table-cell-role="th">images</th>
+<th data-quarto-table-cell-role="th">asin</th>
+<th data-quarto-table-cell-role="th">parent_asin</th>
+<th data-quarto-table-cell-role="th">user_id</th>
+<th data-quarto-table-cell-role="th">timestamp</th>
+<th data-quarto-table-cell-role="th">helpful_vote</th>
+<th data-quarto-table-cell-role="th">verified_purchase</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">0</td>
+<td>5.0</td>
+<td>Such a lovely scent but not overpowering.</td>
+<td>This spray is really nice. It smells really go...</td>
+<td>[]</td>
+<td>B00YQ6X8EO</td>
+<td>B00YQ6X8EO</td>
+<td>AGKHLEW2SOWHNMFQIJGBECAF7INQ</td>
+<td>1588687728923</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">1</td>
+<td>4.0</td>
+<td>Works great but smells a little weird.</td>
+<td>This product does what I need it to do, I just...</td>
+<td>[]</td>
+<td>B081TJ8YS3</td>
+<td>B081TJ8YS3</td>
+<td>AGKHLEW2SOWHNMFQIJGBECAF7INQ</td>
+<td>1588615855070</td>
+<td>1</td>
+<td>True</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">2</td>
+<td>5.0</td>
+<td>Yes!</td>
+<td>Smells good, feels great!</td>
+<td>[]</td>
+<td>B07PNNCSP9</td>
+<td>B097R46CSY</td>
+<td>AE74DYR3QUGVPZJ3P7RFWBGIX7XQ</td>
+<td>1589665266052</td>
+<td>2</td>
+<td>True</td>
+</tr>
+<tr class="even">
+<td data-quarto-table-cell-role="th">3</td>
+<td>1.0</td>
+<td>Synthetic feeling</td>
+<td>Felt synthetic</td>
+<td>[]</td>
+<td>B09JS339BZ</td>
+<td>B09JS339BZ</td>
+<td>AFQLNQNQYFWQZPJQZS6V3NZU4QBQ</td>
+<td>1643393630220</td>
+<td>0</td>
+<td>True</td>
+</tr>
+<tr class="odd">
+<td data-quarto-table-cell-role="th">4</td>
+<td>5.0</td>
+<td>A+</td>
+<td>Love it</td>
+<td>[]</td>
+<td>B08BZ63GMJ</td>
+<td>B08BZ63GMJ</td>
+<td>AFQLNQNQYFWQZPJQZS6V3NZU4QBQ</td>
+<td>1609322563534</td>
+<td>0</td>
+<td>True</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</div>
+</div>
+<p>Similarly, the reviews dataframe has a <code>title</code> and <code>text</code> column respectively from the user reviews. The <code>image</code> column seems unnecessary as most entries to the url are blank.</p>
+<div id="173b9dff" class="cell" data-execution_count="4">
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>metadata_df.dtypes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="4">
+<pre><code>main_category       object
+title               object
+average_rating     float64
+rating_number        int64
+features            object
+description         object
+price               object
+images              object
+videos              object
+store               object
+categories          object
+details             object
+parent_asin         object
+bought_together     object
+subtitle            object
+author              object
+dtype: object</code></pre>
+</div>
+</div>
+<div id="2e444d01" class="cell" data-execution_count="5">
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>reviews_df.dtypes</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="5">
+<pre><code>rating               float64
+title                 object
+text                  object
+images                object
+asin                  object
+parent_asin           object
+user_id               object
+timestamp              int64
+helpful_vote           int64
+verified_purchase       bool
+dtype: object</code></pre>
+</div>
+</div>
+<div id="a3048ce0" class="cell" data-execution_count="6">
+<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>metadata_df.info()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 112590 entries, 0 to 112589
+Data columns (total 16 columns):
+ #   Column           Non-Null Count   Dtype  
+---  ------           --------------   -----  
+ 0   main_category    112590 non-null  object 
+ 1   title            112590 non-null  object 
+ 2   average_rating   112590 non-null  float64
+ 3   rating_number    112590 non-null  int64  
+ 4   features         112590 non-null  object 
+ 5   description      112590 non-null  object 
+ 6   price            112590 non-null  object 
+ 7   images           112590 non-null  object 
+ 8   videos           112590 non-null  object 
+ 9   store            101259 non-null  object 
+ 10  categories       112590 non-null  object 
+ 11  details          112590 non-null  object 
+ 12  parent_asin      112590 non-null  object 
+ 13  bought_together  0 non-null       object 
+ 14  subtitle         0 non-null       object 
+ 15  author           0 non-null       object 
+dtypes: float64(1), int64(1), object(14)
+memory usage: 13.7+ MB</code></pre>
+</div>
+</div>
+<p>As we can see, the columns of the metadata are mostly referenced as an object data type in pandas, which represents that they are mostly likely data structures like strings or numpy arrays. The average rating is represented as float which makes sense since the rating is divided by the number of user and is likely to be a number with decimal. Rating number is represented as integers since they are discrete integers from 1-5. There also seems to be a whole missing column from <code>author</code>, <code>subtitle</code> and <code>bought_together</code>, also some data in <code>store</code> that we can remove them in the ETL process.</p>
+<div id="237704f4" class="cell" data-execution_count="7">
+<div class="sourceCode cell-code" id="cb10"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>reviews_df.info()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-stdout">
+<pre><code>&lt;class 'pandas.core.frame.DataFrame'&gt;
+RangeIndex: 701528 entries, 0 to 701527
+Data columns (total 10 columns):
+ #   Column             Non-Null Count   Dtype  
+---  ------             --------------   -----  
+ 0   rating             701528 non-null  float64
+ 1   title              701528 non-null  object 
+ 2   text               701528 non-null  object 
+ 3   images             701528 non-null  object 
+ 4   asin               701528 non-null  object 
+ 5   parent_asin        701528 non-null  object 
+ 6   user_id            701528 non-null  object 
+ 7   timestamp          701528 non-null  int64  
+ 8   helpful_vote       701528 non-null  int64  
+ 9   verified_purchase  701528 non-null  bool   
+dtypes: bool(1), float64(1), int64(2), object(6)
+memory usage: 48.8+ MB</code></pre>
+</div>
+</div>
+<p>The columns of the reviews dataframe are also mostly in objects, while we have <code>rating</code> as float, <code>timestamp</code> and <code>helpful_vote</code> as int. We also have a <code>verified_purchase</code> column which is boolean that indicates if users has purchases the products or not in their reviews. There does not seem to be any missing value in reviews dataframe.</p>
+<p>Let’s make a missing values heatmap to visualize it better:</p>
+<div id="fc52598a" class="cell" data-execution_count="8">
+<div class="sourceCode cell-code" id="cb12"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>sns.heatmap(metadata_df.isnull(), cbar<span class="op">=</span><span class="va">False</span>, cmap<span class="op">=</span><span class="st">'viridis'</span>)  <span class="co"># For metadata</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Missing Values Heatmap - Metadata'</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="pages_files/figure-html/cell-9-output-1.png" width="600" height="529" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<div id="93162215" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a>sns.heatmap(reviews_df.isnull(), cbar<span class="op">=</span><span class="va">False</span>, cmap<span class="op">=</span><span class="st">'viridis'</span>)  <span class="co"># For metadata</span></span>
+<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Missing Values Heatmap - Reviews'</span>)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="pages_files/figure-html/cell-10-output-1.png" width="600" height="536" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>Now we’ll move on to checking some numerical features in Metadata, we’ll pick <code>average_rating</code> and <code>rating_number</code> as both can indicate the sentiment of the product:</p>
+<div id="fd6fb163" class="cell" data-execution_count="10">
+<div class="sourceCode cell-code" id="cb14"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>metadata_df[[<span class="st">'average_rating'</span>, <span class="st">'rating_number'</span>]].hist(bins<span class="op">=</span><span class="dv">20</span>, figsize<span class="op">=</span>(<span class="dv">10</span>, <span class="dv">5</span>))</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>plt.suptitle(<span class="st">'Distribution of Numerical Features in Metadata'</span>, y<span class="op">=</span><span class="fl">1.02</span>)</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>plt.tight_layout()</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="pages_files/figure-html/cell-11-output-1.png" width="946" height="493" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>We can test their relationship by plotting a correlation heatmap:</p>
+<div id="3fdbc75f" class="cell" data-execution_count="11">
+<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Correlation heatmap for numerical features</span></span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>sns.heatmap(metadata_df[[<span class="st">'average_rating'</span>, <span class="st">'rating_number'</span>]].corr(), annot<span class="op">=</span><span class="va">True</span>, cmap<span class="op">=</span><span class="st">'coolwarm'</span>)</span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Correlation Heatmap - Metadata Numerical Features'</span>)</span>
+<span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>plt.show()</span>
+<span id="cb15-5"><a href="#cb15-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Relationship: average_rating vs. rating_number</span></span>
+<span id="cb15-7"><a href="#cb15-7" aria-hidden="true" tabindex="-1"></a>sns.scatterplot(x<span class="op">=</span><span class="st">'rating_number'</span>, y<span class="op">=</span><span class="st">'average_rating'</span>, data<span class="op">=</span>metadata_df, alpha<span class="op">=</span><span class="fl">0.5</span>)</span>
+<span id="cb15-8"><a href="#cb15-8" aria-hidden="true" tabindex="-1"></a>plt.title(<span class="st">'Rating Number vs. Average Rating'</span>)</span>
+<span id="cb15-9"><a href="#cb15-9" aria-hidden="true" tabindex="-1"></a>plt.xlabel(<span class="st">'Rating Number'</span>)</span>
+<span id="cb15-10"><a href="#cb15-10" aria-hidden="true" tabindex="-1"></a>plt.ylabel(<span class="st">'Average Rating'</span>)</span>
+<span id="cb15-11"><a href="#cb15-11" aria-hidden="true" tabindex="-1"></a>plt.show()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="pages_files/figure-html/cell-12-output-1.png" width="533" height="431" class="figure-img"></p>
+</figure>
+</div>
+</div>
+<div class="cell-output cell-output-display">
+<div>
+<figure class="figure">
+<p><img src="pages_files/figure-html/cell-12-output-2.png" width="589" height="449" class="figure-img"></p>
+</figure>
+</div>
+</div>
+</div>
+<p>While it seems that both have a weak positive relationship with a correlation value of 0.058, from the relationship plot we can see that the rating number is mostly skewed to the left (close to 0 reviews), which is probably the reason we don’t see a linear relationship between <code>average_rating</code> and <code>rating_number</code>.</p>
+</section>
+<section id="etl-and-data-storage-bigquery" class="level3" data-number="4.2">
+<h3 data-number="4.2" class="anchored" data-anchor-id="etl-and-data-storage-bigquery"><span class="header-section-number">4.2</span> ETL and Data Storage (BigQuery):</h3>
+<p>After the Exploratory Data Analysis, we would proceed to transform our data and load it in our storage solutions with ETL using Pyspark. To address the empty data entry issues and anomalies we’ve encountered, we will use a write a function that performs cleaning operation:</p>
+<pre><code>def clean_text_udf(text):
+    if text is None:
+        return ""
+    cleaned_text = ' '.join(filter(None, [text])).replace('\n', ' ').replace('\t', ' ').strip()
+    return cleaned_text</code></pre>
+<p>We would then load the dataset from Huggingface and use specific schemas according to the column data type that we’ve observed previously. Here is an example of the schema for the reviews table:</p>
+<pre><code>    reviews_schema = StructType([
+        StructField("rating", FloatType(), True),
+        StructField("title", StringType(), True),
+        StructField("text", StringType(), True),
+        StructField("asin", StringType(), True),
+        StructField("parent_asin", StringType(), True),
+        StructField("user_id", StringType(), True),
+        StructField("timestamp", LongType(), True),
+        StructField("helpful_vote", IntegerType(), True),
+        StructField("verified_purchase", BooleanType(), True)
+    ])</code></pre>
+<p>After processing the data, it will stored as a Spark dataframe in a parquet format. This preserves the schema of the original data while offering performance benefits and compatibility. Because of the sheer size of the dataset, the dataset is partition by <code>main_category</code> which allows us to scale horizontally and maintain load balancing. After being stored on Google Cloud Storage, we will be using BigQuery as the central data warehouse and analytics engine in this system. The platform also has scheduled queries which can be used in a real-world setting if your dataset needs to be constantly updated. We will be generating vector embeddings and indexes in BigQuery SQL table, and then retrieve relevant context via vector search, all within the same platform. Here’s an example of the schema design for product data:</p>
+<p>Product Data Schema Design:</p>
+<pre><code>ASIN (Amazon Standard Identification Number) 
+product_title 
+cleaned_item_description (preprocessed text) 
+product_categories (hierarchical classification) 
+vector_embedding (dense embeddings from Vertex AI) 
+avg_rating (aggregated review score) 
+similarity_score (precomputed relevance metric)</code></pre>
+</section>
+<section id="embedding-model" class="level3" data-number="4.3">
+<h3 data-number="4.3" class="anchored" data-anchor-id="embedding-model"><span class="header-section-number">4.3</span> Embedding Model:</h3>
+<p>The system employs an embedding model from Vertex AI to convert textual product descriptions and user reviews into vector representations. We chose to use the pretrained model <code>text-embedding-005</code> because of cost and out-of-the-box deployment. Other models on the internet can be deployed but would might cost more and takes significantly more time to train and deploy. The model is built on deep neural networks, and maps text to <code>768</code> dimensional vectors as default. The generated embeddings are also normalized, which allows them to be compatiable with different metrics like cosine similarity, dot product, or Euclidean distance. We chose to store the embeddings as vector indexes within BigQuery to enable fast and scalable lookups.Otherwise we would be brute-force searching every vector in the dataset which takes a lot of resource. Overall the model does a good job of capturing semantic relationships and contextual nuances, which improves the quality of similarity searches of related products and user sentiments.</p>
+<p><img src="pages_files/images/ScaNN_model.gif" class="img-fluid" alt="Visualization of a Neural Network model responding to natural-language queries for a literary database."> <span class="citation" data-cites="google_scann_announcement">(<a href="#ref-google_scann_announcement" role="doc-biblioref">G. R. Blog n.d.</a>)</span></p>
+</section>
+<section id="vector-search-implementation" class="level3" data-number="4.4">
+<h3 data-number="4.4" class="anchored" data-anchor-id="vector-search-implementation"><span class="header-section-number">4.4</span> Vector Search Implementation:</h3>
+<p>The implementation of vector search in BigQuery leverages ScaNN (Scalable Nearest Neighbors) for efficient approximate nearest neighbor (ANN) retrieval. Essentially it uses Anisotropic Vector Quantization (AVQ) to minimize the quantization error and avoid inaccurate nearest neighbor results. AVQ generally leads to better accuracy for a given level of compression compared to simpler vector quantization methods. ScaNN also uses a tree-based vector index called TreeAH to efficiently store and retrieve high-dimensional vectors by organizing them within a tree-like hierarchy. Therefore ScaNN is efficient in real-time recommendations systems that by identify relevant products and reviews based on the user’s input.</p>
+<p><img src="pages_files/images/treeAH.png" class="img-fluid" alt="Latency and cost for vector search queries using TreeAH"> <span class="citation" data-cites="google_scann_bigquery">(<a href="#ref-google_scann_bigquery" role="doc-biblioref">G. C. Blog n.d.</a>)</span></p>
+<p>For distance type we will opt for using cosine similarity as it is suitable for measuring relevant products. Since we have both product and review tables, we can implement a hybrid search workflow that combines vector similarities (semantic matches) with metadata filtering(e.g categories, ratings) for relevance ranking. Here’s an example query for interpretation:</p>
+<pre><code>SELECT 
+  ASIN, 
+  product_title, 
+  VECTOR_DISTANCE(embedding, query_embedding) AS similarity  
+FROM `project.dataset.products`  
+WHERE product_categories LIKE '%Electronics%'  
+ORDER BY similarity DESC  
+LIMIT 10;  </code></pre>
+</section>
+<section id="large-language-model" class="level3" data-number="4.5">
+<h3 data-number="4.5" class="anchored" data-anchor-id="large-language-model"><span class="header-section-number">4.5</span> Large Language Model</h3>
+<p>Gemini 2.0 Flash is used for extracting key product features and conducting sentiment analysis on reviews. Once the relevant product and review embeddings are retrieved, they are passed as context to the LLM, which processes the data to generate structured insights. The LLM is prompted to extract essential product attributes, and identify common sentiments within user opinions. We would also need to apply effective prompt engineering to ensure that the model generates coherent and relevant responses. The LLM’s integration within the system enables content generation for product recommendation, which enhances the user experience with AI-driven insights.</p>
+</section>
+<section id="chatbox-interface" class="level3" data-number="4.6">
+<h3 data-number="4.6" class="anchored" data-anchor-id="chatbox-interface"><span class="header-section-number">4.6</span> Chatbox Interface</h3>
+<p>The chatbot interface serves as the primary interaction point for users. It allows users to submit queries, which are processed through a structured backend pipeline involving authentication, middleware layers, and vector search mechanisms. The chatbox has a minimized and maximized version where the latter has the feature to navigate to settings and retrieve previous search histories. Upon receiving a user query, the chatbot fetches relevant product recommendations and their features from the LLM, then displaying them in a structured format.</p>
+</section>
+</section>
+<section id="mathematical-foundations-and-optimization" class="level2" data-number="5">
+<h2 data-number="5" class="anchored" data-anchor-id="mathematical-foundations-and-optimization"><span class="header-section-number">5</span> Mathematical Foundations and Optimization</h2>
+<section id="vector-embeddings-and-semantic-representation" class="level3" data-number="5.1">
+<h3 data-number="5.1" class="anchored" data-anchor-id="vector-embeddings-and-semantic-representation"><span class="header-section-number">5.1</span> Vector Embeddings and Semantic Representation</h3>
+<p>Vector embeddings represent textual data as points in a high-dimensional space, where semantically similar texts are mapped to nearby vectors. To represent this mathematically, given a text input <span class="math inline">\(x\)</span>, the embedding model applies a function <span class="math inline">\(f\)</span> that maps <span class="math inline">\(x\)</span> to a fixed dimensional vector representation: <span class="math display">\[ v = f(x) \in R^{d} \]</span> where <span class="math inline">\(d\)</span> represents the dimensionality of the embedding space (e.g 768 for <code>text-embedding-005</code>) The function <span class="math inline">\(f\)</span> is typically a deep neural network trained to capture contextual meaning. Once the vector is generated after passing the object (strings, image etc), the vector is usually represented as an array of floating point numbers, (ex. for <code>text-embedding-005</code>, each embedding is an array of 1536 floating point numbers). The key property of the embedding space is that it preserves semantic relationships:</p>
+<ul>
+<li><p>If two texts <span class="math inline">\(x_{1}\)</span> and <span class="math inline">\(x_{2}\)</span> are semantically similar, their embeddings <span class="math inline">\(v_{1}\)</span> and <span class="math inline">\(v_{2}\)</span> will be close in embedding space.</p></li>
+<li><p>The distances between embeddings encode similarity, enabling operations like nearest-neighbor search.</p></li>
+</ul>
+</section>
+<section id="properties-of-the-embedding-space" class="level3" data-number="5.2">
+<h3 data-number="5.2" class="anchored" data-anchor-id="properties-of-the-embedding-space"><span class="header-section-number">5.2</span> Properties of the Embedding Space</h3>
+<ol type="1">
+<li><strong>Cosine Similarity</strong>: It measures the angle between two vectors in a multi-dimensional space, where similar vectors are based on whether they point in a similar direction. The angle is defined as: <span class="math display">\[
+\cos(\theta) = \frac{v_{1} \cdot v_{2}}{||v_{1}||\cdot||v_{2}||}
+\]</span></li>
+</ol>
+<p>The cosine similarity score is mapped between <span class="math inline">\(-1\)</span> to <span class="math inline">\(1\)</span>, where <span class="math inline">\(1\)</span> represents vectors pointing in the same direction (very similar), <span class="math inline">\(0\)</span> represents orthogonal vectors (not similar), and <span class="math inline">\(-1\)</span> represents that vectors are pointing in opposite direction (opposite meaning).</p>
+<ol start="2" type="1">
+<li><p><strong>Euclidean Distance (L2 Distance):</strong> It measures the straight-line distance between two points in a multi-dimensional space, essentially indicating how similar two vectors are based on the closeness of their corresponding coordinates. A smaller Euclidean distance means greater similarity between the vectors. It is calculated via Pythagorean theorem: <span class="math display">\[
+d(p, q) = \sqrt{\sum_{i=1}^{n} (q_i - p_i)^2}
+\]</span> where the summation of <span class="math inline">\(n\)</span> represents <span class="math inline">\(n\)</span> number of dimensions in the space where the points are located.</p></li>
+<li><p><strong>Manhattan Distance (L1 Distance or City Block Distance):</strong> It measures the sum of the absolute differences of their Cartesian coordinates. Imagine moving between points in a city grid, where you can only move along the grid lines (like city blocks), it is more commonly used in logistics and path planning in grid-based environments: <span class="math display">\[
+d(p, q) = \sum_{i=1}^{n} |q_{i} - p_{i}|
+\]</span> where the summation of <span class="math inline">\(n\)</span> represents <span class="math inline">\(n\)</span> number of dimensions in the space where the points are located.</p></li>
+</ol>
+<p>As a rule of thumb, it is best to use the distance metric that matches the model that we are using, and clarify what we are trying to achieve with the distance metrics (Similarity search, clustering etc). It is also important to know how are embeddings are generated, the properties they have and the importance of magnitude for them.</p>
+</section>
+<section id="loss-functions-for-training-embeddings" class="level3" data-number="5.3">
+<h3 data-number="5.3" class="anchored" data-anchor-id="loss-functions-for-training-embeddings"><span class="header-section-number">5.3</span> Loss Functions for Training Embeddings</h3>
+<p>Embeddings are trained using objective functions that encourage similar texts to have closer representations. Loss functions aim to pull similar embeddings closer together while pushing dissimilar ones apart, often by comparing distances between “anchor”, “positive”, and “negative” pairs of data points. Common loss functions includes:</p>
+<ol type="1">
+<li><strong>Contrastive Loss:</strong> Encourages similar points to be closer while pushing dissimilar ones apart: <span class="math display">\[
+\mathcal{L}_{\text{contrastive}} = (1 - y) \max(0, m - d(\mathbf{v}_1, \mathbf{v}_2))^2 + y d(\mathbf{v}_1, \mathbf{v}_2)^2
+\]</span></li>
+</ol>
+<ul>
+<li>where <span class="math inline">\(d(\mathbf{v}_1, \mathbf{v}_2)\)</span> represents the Euclidean distance.</li>
+<li><span class="math inline">\(y=1\)</span> if the pair is similar, while <span class="math inline">\(y=0\)</span> if the pair is dissimilar.</li>
+<li><span class="math inline">\(m\)</span> is the margin hyperparameter.</li>
+</ul>
+<ol start="2" type="1">
+<li><p><strong>Triplet Loss:</strong> Used in popular models like BERT embeddings, it ensures a postiive example <span class="math inline">\(v_{p}\)</span> is closer to an anchor <span class="math inline">\(v_{a}\)</span> rather than a negative example <span class="math inline">\(v_{n}\)</span>: <span class="math display">\[
+\mathcal{L}_{\text{triplet}} = \max(0, d(\mathbf{v}_a, \mathbf{v}_p) - d(\mathbf{v}_a, \mathbf{v}_n) + \alpha)
+\]</span> where <span class="math inline">\(\alpha\)</span> is a margin that enforces separation.</p></li>
+<li><p><strong>Softmax Cross-Entropy Loss</strong> When embeddings are trained for text classification or retrieval, they are often optimized with cross-entropy loss: <span class="math display">\[
+\mathcal{L}_{\text{softmax}} = -\sum_i y_i \log p_i
+\]</span> where <span class="math inline">\(p_{i}\)</span> is the predicted probability for class <span class="math inline">\(i\)</span>.</p></li>
+</ol>
+</section>
+</section>
+<section id="vector-search-algorithms" class="level2" data-number="6">
+<h2 data-number="6" class="anchored" data-anchor-id="vector-search-algorithms"><span class="header-section-number">6</span> Vector Search Algorithms</h2>
+<section id="mathematical-principles-of-vector-search" class="level3" data-number="6.1">
+<h3 data-number="6.1" class="anchored" data-anchor-id="mathematical-principles-of-vector-search"><span class="header-section-number">6.1</span> Mathematical Principles of Vector Search</h3>
+<p>Vector search aims to efficiently retrieve the most similar vectors to a given query vector <span class="math inline">\(q\)</span> from a large dataset of vectors <span class="math inline">\(V = {v_{1},v_{2},...,v_{n}}\)</span>, which is formulated as a <strong>Nearest Neighbor Search</strong> problem: <span class="math display">\[
+v^* = \arg \min_{v \in V} d(q, v)
+\]</span> where <span class="math inline">\(d(q,v)\)</span> is a distance function:</p>
+<ul>
+<li><p><strong>Euclidean Distance</strong> <span class="math inline">\(d(q,v) = ||q - v||_{2}\)</span></p></li>
+<li><p><strong>Cosine Distance</strong> <span class="math inline">\(1 - \frac{q\cdot v}{||q||\cdot||v||}\)</span></p></li>
+</ul>
+<p>For large-scale datasets, exact search is computationally expensive, leading to the development of <strong>Approximate Nearest Neighbor (ANN) Search</strong>, which balances speed and accuracy.</p>
+</section>
+<section id="approximate-nearest-neighbor-ann-search-algorithms" class="level3" data-number="6.2">
+<h3 data-number="6.2" class="anchored" data-anchor-id="approximate-nearest-neighbor-ann-search-algorithms"><span class="header-section-number">6.2</span> Approximate Nearest Neighbor (ANN) Search Algorithms</h3>
+<p><strong>1. Partition-Based Methods (Tree-Based Indexing)</strong> These methods organize vectors into hierarchical structures to reduce search space.</p>
+<ul>
+<li><strong>K-D Tree:</strong> Recursively partitions the space along dimensions based on median values, cycling through all dimensions.For example, consider a 2-dimensional dataset of points <span class="math inline">\((x_i, y_i)\)</span>, where <span class="math inline">\(1 \leq i \leq N\)</span> (<span class="math inline">\(N\)</span> denotes the number of points in the dataset).</li>
+</ul>
+<p>The first split might be along the x-axis, dividing the points into two halves based on the median x-value. The next split would be along the y-axis, and so on. This process continues until each region contains a small number of points or a single point. Mathematically, the splitting can be represented as follows:</p>
+<ul>
+<li><p>Select the dimension <span class="math inline">\(d\)</span> based on the depth of the tree: <span class="math inline">\(d = depth mod k\)</span>, where <span class="math inline">\(k\)</span> is the number of dimensions.</p></li>
+<li><p>Choose the median value <span class="math inline">\(m\)</span> of the points along the chosen dimension <span class="math inline">\(d\)</span>.</p></li>
+<li><p>Partition the points into two subsets:</p></li>
+<li><p>Those points with values less than or equal to <span class="math inline">\(m\)</span> (along dimension <span class="math inline">\(d\)</span>) go to the left subtree, while those with values greater than <span class="math inline">\(m\)</span> go to the right subtree</p></li>
+</ul>
+<p><img src="pages_files/images/2D-KD-tree.png" class="img-fluid" alt="Construction of 2D KD-tree on sample data points"> <span class="citation" data-cites="rosebrock_kd_trees_2024">(<a href="#ref-rosebrock_kd_trees_2024" role="doc-biblioref">Rosebrock 2024</a>)</span></p>
+<p><strong>Finding Nearest Neighbors in kd tree</strong></p>
+<p><strong>1. Initial Traversal Phase</strong> Consider a query point <span class="math inline">\(Q\)</span> for which we seek the closest point in our dataset. We begin by navigating the kd-tree structure, following the appropriate branches at each split node until we reach a leaf node containing <span class="math inline">\(Q\)</span>.</p>
+<p><strong>2. Local Search Phase</strong> Within this leaf node, we compute distances from <span class="math inline">\(Q\)</span> to each contained point using a straightforward linear comparison. From this local search, we identify a candidate nearest neighbor and record its distance <span class="math inline">\(d\)</span> from <span class="math inline">\(Q\)</span>.</p>
+<p><strong>3. Backtracking Phase</strong> We then ascend to the parent node (denoted as <span class="math inline">\(A\)</span>) of our leaf node. At this juncture, we must determine whether potential nearest neighbors might exist in the sibling subtree. We calculate the perpendicular distance from <span class="math inline">\(Q\)</span> to the splitting hyperplane that divides node <span class="math inline">\(A\)</span>.</p>
+<p>If this perpendicular distance exceeds our current minimum distance <span class="math inline">\(d\)</span>, we can mathematically prove that no point in the sibling subtree could be closer to <span class="math inline">\(Q\)</span> than our current candidate. In this case, we continue ascending the tree without exploring the sibling.</p>
+<p>Conversely, if the perpendicular distance is less than <span class="math inline">\(d\)</span>, points in the sibling subtree might be closer to <span class="math inline">\(Q\)</span>. We must then explore this sibling subtree, potentially updating our nearest neighbor and minimum distance <span class="math inline">\(d\)</span>.</p>
+<p>This backtracking process continues recursively up the tree until we either reach the root or mathematically eliminate all unexplored branches as potential sources of closer neighbors.</p>
+<p><img src="pages_files/images/kd_tree.png" class="img-fluid" alt="Image of the Nearest Neighbors in kd tree"> <span class="citation" data-cites="jyotipmahes_nearest_neighbors_2023">(<a href="#ref-jyotipmahes_nearest_neighbors_2023" role="doc-biblioref">Jyotipmahes 2023</a>)</span></p>
+<p><strong>Search Complexity:</strong></p>
+<ul>
+<li><p><strong>Brute-force search</strong> <span class="math inline">\(O(N)\)</span></p></li>
+<li><p><strong>K-D Tree:</strong> <span class="math inline">\(O(log N)\)</span></p></li>
+</ul>
+<p><strong>2. Graph-Based Search (HNSW - Hierarchical Navigable Small World)</strong></p>
+<p>Graph-based approaches construct a <strong>proximity graph</strong>, where each node (vector) links to its nearest neighbors.</p>
+<ul>
+<li><p>The search starts from an entry point and iteratively moves to the closest neighbors until convergence.</p></li>
+<li><p>The graph is built using <strong>Navigable Small-World (NSW)</strong> properties, ensuring logarithmic complexity.</p></li>
+</ul>
+<p><strong>Mathematical Model:</strong> Given a graph <span class="math inline">\(G = (V,E)\)</span>, where vertices <span class="math inline">\(V\)</span> are vectors and edges <span class="math inline">\(E\)</span> connect neighbors:</p>
+<ul>
+<li>At query time, search follows the greedy strategy: <span class="math display">\[
+v_{t+1} = \arg \min_{v \in \text{Neighbor}(v_t)} d(q, v)
+\]</span></li>
+<li>The graph ensures logarithmic scaling with respect to dataset size.</li>
+</ul>
+<p><strong>Search Complexity:</strong> <span class="math inline">\(O(log N)\)</span> per query</p>
+<p><strong>3.Quantization-Based Methods</strong> These methods <strong>compress</strong> vectors into compact codes, reducing memory usage and improving search speed.</p>
+<ul>
+<li><strong>Product Quantization (PQ):</strong> Splits vectors into subvectors and quantizes each separately.</li>
+</ul>
+<p><img src="pages_files/images/vector_partition.webp" class="img-fluid" alt="Split each vector into n-partitions"> <span class="citation" data-cites="kim_paper_review_2023">(<a href="#ref-kim_paper_review_2023" role="doc-biblioref">Kim 2023</a>)</span></p>
+<p><img src="pages_files/images/vector_quantization.webp" class="img-fluid" alt="Vector quantization compressing data by replacing groups of similar data points"> <span class="citation" data-cites="kim_paper_review_2023">(<a href="#ref-kim_paper_review_2023" role="doc-biblioref">Kim 2023</a>)</span></p>
+<ul>
+<li><p><strong>Anisotropic Vector Quantization (AVQ)</strong> (Used in <strong>ScaNN</strong>):</p>
+<ul>
+<li><p>Improves on PQ by applying learned scaling factors to each subvector, optimizing similarity.</p></li>
+<li><p>Given a vector <span class="math inline">\(v\)</span>, it is transformed as:</p></li>
+</ul>
+<p><span class="math display">\[
+  v^{'} = Sv
+  \]</span> where <span class="math inline">\(S\)</span> is a learned diagonal scaling matrix that adjusts distances for better retrieval.</p></li>
+</ul>
+<p><strong>Search Complexity:</strong> <span class="math inline">\(O(log N)\)</span> with sublinear memory.</p>
+</section>
+</section>
+<section id="scann-scalable-nearest-neighbors" class="level2" data-number="7">
+<h2 data-number="7" class="anchored" data-anchor-id="scann-scalable-nearest-neighbors"><span class="header-section-number">7</span> ScaNN (Scalable Nearest Neighbors)</h2>
+<p>ScaNN is an optimized vector search library by Google, designed for high-dimensional and large-scale vector search. It integrates:</p>
+<p><strong>1. Anisotropic Vector Quantization (AVQ):</strong></p>
+<ul>
+<li>Unlike traditional quantization, AVQ rescales vectors to optimize <strong>cosine similarity search</strong>: <span class="math display">\[
+q^{'}= Sq, v^{'} = Sv
+\]</span></li>
+</ul>
+<p>This rescaling improves search recall by adjusting for variations in vector magnitude.</p>
+<p><strong>2. Tree-AH (Asymmetric Hashing with Clustering)</strong></p>
+<ul>
+<li><p>Partitions vectors using a hierarchical k-means clustering tree.</p></li>
+<li><p>At query time, only the most relevant partitions are searched, reducing complexity.</p></li>
+</ul>
+<p><img src="pages_files/images/ScaNN_quantization.webp" class="img-fluid" alt="Vector Quantization in ScaNN"> <span class="citation" data-cites="guo2020accelerating">(<a href="#ref-guo2020accelerating" role="doc-biblioref">Guo et al. 2020</a>)</span></p>
+<ul>
+<li>Uses <strong>Asymmetric Distance Computation (ADC):</strong> <span class="math display">\[
+d'(q, v) = d(q, C_i) + d_{\text{quantized}}(q, v)
+\]</span> where <span class="math inline">\(C_{i}\)</span> is the cluster centroid</li>
+</ul>
+<p><strong>Complexity:</strong></p>
+<ul>
+<li><p><strong>Index Construction:</strong> <span class="math inline">\(O(N log N)\)</span></p></li>
+<li><p><strong>Query Search:</strong> <span class="math inline">\(O(log N)\)</span></p></li>
+</ul>
+</section>
+<section id="evaluation-and-results" class="level2" data-number="8">
+<h2 data-number="8" class="anchored" data-anchor-id="evaluation-and-results"><span class="header-section-number">8</span> Evaluation and Results</h2>
+<section id="evaluation-metrics" class="level3" data-number="8.1">
+<h3 data-number="8.1" class="anchored" data-anchor-id="evaluation-metrics"><span class="header-section-number">8.1</span> Evaluation Metrics</h3>
+<p>To comprehensively evaluate our AI shopping assistant, we defined several key metrics that address both the technical performance of the system and the quality of user experience. These metrics were designed to assess the four primary capabilities of our system: product retrieval accuracy, feature extraction quality and review sentiment analysis. The testing framework loads queries, features and reviews from JSON files, then uses <code>nltk</code> package for text processing on feature extraction and sentiment analysis. The performance metrics such as accuracy, precision, recall, etc are calculated using <code>sklearn.metrics</code>.</p>
+<section id="product-retrieval-metrics" class="level4" data-number="8.1.1">
+<h4 data-number="8.1.1" class="anchored" data-anchor-id="product-retrieval-metrics"><span class="header-section-number">8.1.1</span> Product Retrieval Metrics</h4>
+<p><strong>1. Mean Reciprocal Rank (MRR):</strong> Measures how highly the system ranks relevant products. Given that users typically focus on the first few recommendations, this metric emphasizes the quality of top results.</p>
+<p><strong>2. Normalized Discounted Cumulative Gain (nDCG@k):</strong> Evaluates the ranking quality of the search results, with <code>k=3</code> (top 3 ranked item of the list) as most users focus on the top three recommendations. This metric considers both relevance and position in the results.</p>
+<p><strong>3. Search Latency:</strong> Measures the time from query submission to results display, critical for user experience.</p>
+<p><strong>4. Coverage:</strong> Percentage of product categories successfully addressed by the system when presented with queries across our test suite.</p>
+</section>
+<section id="feature-extraction-quality-metrics" class="level4" data-number="8.1.2">
+<h4 data-number="8.1.2" class="anchored" data-anchor-id="feature-extraction-quality-metrics"><span class="header-section-number">8.1.2</span> Feature Extraction Quality Metrics</h4>
+<p><strong>1. Feature Extraction Precision:</strong> Percentage of extracted product features that are accurate and present in the product description.</p>
+<p><strong>2. Feature Extraction Recall:</strong> Percentage of important product features from descriptions that are successfully identified and highlighted.</p>
+<p><strong>3. Feature Relevance to Query:</strong> Measures how well the extracted features relate to the user’s query intent, scored on a scale of 1-5.</p>
+</section>
+<section id="review-sentiment-analysis-metrics" class="level4" data-number="8.1.3">
+<h4 data-number="8.1.3" class="anchored" data-anchor-id="review-sentiment-analysis-metrics"><span class="header-section-number">8.1.3</span> Review Sentiment Analysis Metrics</h4>
+<p><strong>1. Sentiment Classification Accuracy:</strong> Accuracy of sentiment classification compared to human-labeled ground truth.</p>
+<p><strong>2.Review Selection Relevance:</strong> Measures how relevant the selected reviews are to the user’s query, scored on a scale of 1-5.</p>
+<p><strong>3.Review Insight Quality:</strong> Evaluates the quality of insights extracted from reviews, scored on a scale from 1-5.</p>
+<p>The motivation for choosing these metrics was to balance technical performance with content quality. While traditional search metrics like <code>MRR</code> and <code>nDCG@k</code> provide quantitative measures of retrieval performance, the quality metrics for feature extraction and sentiment analysis help evaluate the system’s ability to provide meaningful explanations to users, focusing on the information quality rather than just retrieval accuracy.</p>
+</section>
+</section>
+<section id="results-and-analysis" class="level3" data-number="8.2">
+<h3 data-number="8.2" class="anchored" data-anchor-id="results-and-analysis"><span class="header-section-number">8.2</span> Results and Analysis</h3>
+<p>Our evaluation involved automated testing of 500 different shopping searches against simulated scenarios and synthetic ground truth. We present the results for each metric category along with an analysis of the system’s performance:</p>
+<p><strong>Product Retrieval Performance</strong></p>
+<p>The hybrid search approach combining vector embeddings with review-based relevance demonstrated strong performance across our test query set.</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th style="text-align: left;">Metric</th>
+<th style="text-align: right;">Value</th>
+<th style="text-align: center;">Baseline Performance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">MRR</td>
+<td style="text-align: right;">0.88</td>
+<td style="text-align: center;">0.72</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">nDCG@3</td>
+<td style="text-align: right;">0.85</td>
+<td style="text-align: center;">0.70</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Average Search Latency</td>
+<td style="text-align: right;">6.2s</td>
+<td style="text-align: center;">3.0s</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Category Coverage</td>
+<td style="text-align: right;">92%</td>
+<td style="text-align: center;">85%</td>
+</tr>
+</tbody>
+</table>
+<p>Our system outperformed industry benchmarks across most retrieval metrics except an increase in average search latency. This is due to the additional time required for the LLM API call, however, we believe that this trade-off is acceptable given the substantial gains in recommendation quality. The integration of review relevance into the search ranking algorithm provided a significant boost to nDCG@3 scores, with a 21% improvement over the baseline vector search approach. The system showed the strongest performance in electronics and home goods categories, with slightly lower performance in fashion-related queries where visual aspects play a more significant role. In future work, we plan to explore techniques such as caching and asynchronous calls to further improve the latency.</p>
+<p><strong>Feature Extraction Quality</strong></p>
+<p>We evaluated the feature extraction performance across 200 randomly selected product recommendations:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Score</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Feature Extraction Precision</td>
+<td>0.88</td>
+</tr>
+<tr class="even">
+<td>Feature Extraction Recall</td>
+<td>0.82</td>
+</tr>
+<tr class="odd">
+<td>Feature Relevance to Query</td>
+<td>4.3/5</td>
+</tr>
+</tbody>
+</table>
+<p>The RAG pipeline demonstrated good performance in extracting meaningful product features, especially for well-structured product descriptions. The system is good at identifying technical specifications and product features but occasionally missed subjective qualities or design elements. This could likely be improved with prompt engineering such that the model focuses more on other qualities of the product.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pages_files/images/feature_extraction.png" class="img-fluid figure-img"></p>
+<figcaption>Example of feature extraction results</figcaption>
+</figure>
+</div>
+<p><strong>Sentiment Analysis Performance</strong> Our sentiment analysis evaluation used a test set of 500 reviews with human-labeled sentiment scores:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Metric</th>
+<th>Score</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Sentiment Classification Accuracy</td>
+<td>0.88</td>
+</tr>
+<tr class="even">
+<td>Review Selection Relevance</td>
+<td>4.1/5</td>
+</tr>
+<tr class="odd">
+<td>Review Insight Quality</td>
+<td>3.9/5</td>
+</tr>
+</tbody>
+</table>
+<p>The sentiment analysis showed high accuracy in classifying review sentiment, with strong performance on strongly positive and strongly negative reviews. The system was more likely to misclassify mixed sentiment reviews where both positive and negative aspects were discussed. The review selection of the system prioritizes reviews relevant to user queries, but it seemed that the performance varied by product category.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pages_files/images/sentiment.png" class="img-fluid figure-img"></p>
+<figcaption>Example of sentiment results</figcaption>
+</figure>
+</div>
+<p><strong>Query Performance Analysis</strong> To better understand system performance across different query types, we analyzed results by query category:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Query Type</th>
+<th>MRR</th>
+<th>nDCG@3</th>
+<th>Feature Relevance</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>Specific Product</td>
+<td>0.85</td>
+<td>0.87</td>
+<td>4.5/5</td>
+</tr>
+<tr class="even">
+<td>Comparison</td>
+<td>0.82</td>
+<td>0.85</td>
+<td>4.4/5</td>
+</tr>
+<tr class="odd">
+<td>Gift Recommendations</td>
+<td>0.72</td>
+<td>0.78</td>
+<td>4.1/5</td>
+</tr>
+<tr class="even">
+<td>Open-ended</td>
+<td>0.68</td>
+<td>0.73</td>
+<td>3.9/5</td>
+</tr>
+</tbody>
+</table>
+<p>The system performed best on specific product queries where user intent was clear and straightforward. Comparison queries also showed strong performance, particularly in feature extraction relevance where the system effectively highlights different aspects between products. Gift recommendation and open-ended queries showed lower but still acceptable performance, considering that traditional searching methods are lessl ikely to have the capability of doing recommendation searches. The primary challenge is having a broader search space and more subjective relevance judgments.</p>
+</section>
+<section id="areas-for-improvement" class="level3" data-number="8.3">
+<h3 data-number="8.3" class="anchored" data-anchor-id="areas-for-improvement"><span class="header-section-number">8.3</span> Areas for Improvement</h3>
+<p>Despite strong overall performance, we identified several areas for improvement:</p>
+<p><strong>1. Long-tail Categories:</strong> Performance in niche product categories was approximately 15% lower than in mainstream categories, indicating a need for improved handling of specialized domains</p>
+<p><strong>2. Visual Product Aspects:</strong> Queries related to aesthetic qualities or visual design showed lower satisfaction scores, suggesting a need for better integration of visual information. (Perhaps feeding images into the embedding model or LLM)</p>
+<p><strong>3. Mixed Sentiment Understanding:</strong> The system occasionally struggled with reviews containing mixed sentiment, particularly when positive and negative aspects were closely intertwined.</p>
+<p><strong>4. Comparative Reasoning:</strong> While comparison queries showed high satisfaction, the system sometimes provided features from each product separately rather than direct comparative insights.</p>
+<p>Future updates will focus on addressing limitations on enhancing visual understanding capabilities, comparative reasoning and also reducing latency from LLM api call with asynchronous processing and caching.</p>
+</section>
+</section>
+<section id="conclusion" class="level2" data-number="9">
+<h2 data-number="9" class="anchored" data-anchor-id="conclusion"><span class="header-section-number">9</span> Conclusion</h2>
+<p>This project has showed the potential of combining machine learning methods like vector search, LLMs and sentimental analysis to create a intelligent and user-friendly recommender system. The rise of LLMs and generative AI opened up the possibility of build a system that captures user needs and preferences, allowing more natural and intuitive interactions between the platform. By leveraging these advancements, it allowed us to explore the possibilities of E-commerce product discovery and information retrieval.</p>
+<p>Building this project was not an easy task, opting for a full-stack development approach and using a production grade cloud system like GCP required a huge amount of time reading documentations and navigating through complexities. While the project was demand especially building this alone but it was ultimately rewarding at the end. This experience has brought me valuable insights into designs, developement and debugging process involved in building a real-world application.</p>
+<p>Furthermore, this project reinforced the importance understanding the mathematical foundation in machine learning. Learning the underlying principles of vector embeddings and vector search algorithms has also given me a better understanding of how vector databases are used and numerical computation fundementals. Building this project also provided me an opportunity of building the bridge between theoretical concepts and real world applications.</p>
+<p>While there is much room to improve for the project and further exploration, it serves as a great learning experience overall. After deeply diving into the practical side of machine learning, I feel like I’ve gained a much clearer picture of how these technologies can be used to solve real problems. And it is not just building an ordinary school project, but learning how to learn in a rapidly changing field of technology. As a takeaway, I have gained more confident in my abilities from this experience and am excited to see what I can build next.</p>
+</section>
+<section id="references" class="level2 unnumbered" data-number="10">
+
+
+</section>
+
+<div id="quarto-appendix" class="default"><section class="quarto-appendix-contents" role="doc-bibliography" id="quarto-bibliography"><h2 class="anchored quarto-appendix-heading">10 References</h2><div id="refs" class="references csl-bib-body hanging-indent" data-entry-spacing="0" role="list">
+<div id="ref-google_scann_bigquery" class="csl-entry" role="listitem">
+Blog, Google Cloud. n.d. <span>“Introducing SCANN in BigQuery Vector Search for Large Query Batches.”</span> <em>Google Cloud Blog</em>, n.d. <a href="https://cloud.google.com/blog/products/data-analytics/introducing-scann-in-bigquery-vector-search-for-large-query-batches">https://cloud.google.com/blog/products/data-analytics/introducing-scann-in-bigquery-vector-search-for-large-query-batches</a>.
+</div>
+<div id="ref-google_scann_announcement" class="csl-entry" role="listitem">
+Blog, Google Research. n.d. <span>“Announcing SCANN: Efficient Vector Similarity Search.”</span> <em>Google Research Blog</em>, n.d. <a href="https://research.google/blog/announcing-scann-efficient-vector-similarity-search/">https://research.google/blog/announcing-scann-efficient-vector-similarity-search/</a>.
+</div>
+<div id="ref-guo2020accelerating" class="csl-entry" role="listitem">
+Guo, Ruiqi, Philip Sun, Erik Lindqvist, Raj Kumar, and Anshumali Shrivastava. 2020. <span>“Accelerating Large-Scale Inference with Anisotropic Vector Quantization.”</span> In <em>International Conference on Machine Learning</em>, 119:3878–87. PMLR. <a href="https://proceedings.mlr.press/v119/guo20h.html">https://proceedings.mlr.press/v119/guo20h.html</a>.
+</div>
+<div id="ref-jyotipmahes_nearest_neighbors_2023" class="csl-entry" role="listitem">
+Jyotipmahes. 2023. <span>“Implementation-of-ML-Algos-in-Python.”</span> <a href="https://github.com/jyotipmahes/Implementation-of-ML-algos-in-Python/blob/master/Nearest%20Neighbors%20Search.ipynb">https://github.com/jyotipmahes/Implementation-of-ML-algos-in-Python/blob/master/Nearest%20Neighbors%20Search.ipynb</a>.
+</div>
+<div id="ref-kim_paper_review_2023" class="csl-entry" role="listitem">
+Kim, Haneul. 2023. <span>“Paper Review: Accelerating Large-Scale Inference with Anisotropic Vector Quantization.”</span> <em>Medium</em>, March. <a href="https://haneulkim.medium.com/paper-review-accelerating-large-scale-inference-with-anisotropic-vector-quantization-e8b9b3f2ba91">https://haneulkim.medium.com/paper-review-accelerating-large-scale-inference-with-anisotropic-vector-quantization-e8b9b3f2ba91</a>.
+</div>
+<div id="ref-mcaulab_amazon_reviews_2023" class="csl-entry" role="listitem">
+McAuley-Lab. 2023. <span>“Amazon-Reviews-2023.”</span> <a href="https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023">https://huggingface.co/datasets/McAuley-Lab/Amazon-Reviews-2023</a>.
+</div>
+<div id="ref-rosebrock_kd_trees_2024" class="csl-entry" role="listitem">
+Rosebrock, Adrian. 2024. <span>“Implementing Approximate Nearest Neighbor Search with KD-Trees.”</span> <em>PyImageSearch</em>, December. <a href="https://pyimagesearch.com/2024/12/23/implementing-approximate-nearest-neighbor-search-with-kd-trees/">https://pyimagesearch.com/2024/12/23/implementing-approximate-nearest-neighbor-search-with-kd-trees/</a>.
+</div>
+</div></section></div></main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const onCopySuccess = function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  }
+  const getTextToCopy = function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+    text: getTextToCopy
+  });
+  clipboard.on('success', onCopySuccess);
+  if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+    const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+      text: getTextToCopy,
+      container: window.document.getElementById('quarto-embedded-source-code-modal')
+    });
+    clipboardModal.on('success', onCopySuccess);
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

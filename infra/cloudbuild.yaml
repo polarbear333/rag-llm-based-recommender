@@ -1,0 +1,25 @@
+steps:
+# Build and push Docker image
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/embeddings-service:latest', '.']
+
+# Deploy to Cloud Run
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: gcloud
+  args: ['run', 'deploy', 'embeddings-service', 
+         '--image', 'gcr.io/$PROJECT_ID/embeddings-service:latest',
+         '--region', 'us-west1',
+         '--platform', 'managed']
+
+# Submit Dataproc job to existing cluster
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: bash
+  args: 
+    - '-c'
+    - |
+      gcloud dataproc jobs submit pyspark \
+        --cluster=user-reviews-cluster \
+        --region=$$REGION \
+        gs://your-bucket/spark_jobs/processing.py
+options:
+  substitution_option: ALLOW_LOOSE

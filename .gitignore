@@ -1,0 +1,19 @@
+_publish.yml
+amazon-project-451500-0aa8a0da30ae.json
+data-memo.html
+data-memo.qmd
+new.ipynb
+data-memo_files/
+infra/.terraform/providers/*.exe
+infra/.terraform/providers/**/*.exe
+**/.terraform/providers/**/*.exe
+*.exe
+infra/.terraform/
+# Terraform specific ignores
+*.tfstate
+*.tfstate.*
+terraform.tfstate
+terraform.tfstate.*
+terraform.tfstate.*.backup
+terraform.tfstate.backup
+infra/dataproc_legacy

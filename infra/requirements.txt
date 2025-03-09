@@ -1,0 +1,12 @@
+torch
+transformers
+datasets
+sqlalchemy
+pgvector
+psycopg2-binary
+tqdm
+google-cloud-storage
+tenacity
+google-cloud-secret-manager
+huggingface_hub
+gcsfs

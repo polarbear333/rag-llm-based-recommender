@@ -1,0 +1,6 @@
+venv/
+__pycache__/
+*.pyc
+*.pyo
+.env
+amazon-project-451500-0aa8a0da30ae.json
