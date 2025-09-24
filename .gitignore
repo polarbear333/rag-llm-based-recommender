@@ -17,3 +17,5 @@ terraform.tfstate.*
 terraform.tfstate.*.backup
 terraform.tfstate.backup
 infra/dataproc_legacy
+.vscode
+node_modules
