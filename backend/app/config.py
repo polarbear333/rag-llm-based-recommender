@@ -10,15 +10,15 @@ VERTEX_AI_REGION = os.environ.get("VERTEX_AI_REGION", "us-central1")
 BIGQUERY_DATASET_ID = os.environ.get("BIGQUERY_DATASET_ID")
 
 # BigQuery Table ID for products
-BIGQUERY_PRODUCT_TABLE = os.environ.get("BIGQUERY_PRODUCT_TABLE", "product_embeddings") # Updated default
+BIGQUERY_PRODUCT_TABLE = os.environ.get("BIGQUERY_PRODUCT_TABLE", "product_embeddings") 
 # BigQuery Table ID for reviews
-BIGQUERY_REVIEW_TABLE = os.environ.get("BIGQUERY_REVIEW_TABLE", "review_embeddings") # Updated default
+BIGQUERY_REVIEW_TABLE = os.environ.get("BIGQUERY_REVIEW_TABLE", "review_embeddings") 
 
 # LLM Model Name (Vertex AI PaLM or Gemini)
-LLM_MODEL_NAME = os.environ.get("LLM_MODEL_NAME", "gemini-2.5-pro") # Added default value "gemini-pro"
+LLM_MODEL_NAME = os.environ.get("LLM_MODEL_NAME", "gemini-2.0-flash-lite") 
 
 # Optional: Sentiment Analysis Model Name (Vertex AI or other)
 SENTIMENT_MODEL_NAME = os.environ.get("SENTIMENT_MODEL_NAME")
 
 # Path to Google Application Credentials JSON file
-GOOGLE_APPLICATION_CREDENTIALS_PATH = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") # New variable
+GOOGLE_APPLICATION_CREDENTIALS_PATH = os.environ.get("GOOGLE_APPLICATION_CREDENTIALS") 

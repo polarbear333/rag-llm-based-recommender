@@ -144,7 +144,7 @@ llm-rag-based-ecommerce-recommender/
 
 3. Create a `.env.local` file with your API URL:
    ```
-   NEXT_PUBLIC_API_URL=http://localhost:8000
+   NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
    ```
 
 4. Run the development server:

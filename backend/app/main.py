@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Depends
 from fastapi.middleware.cors import CORSMiddleware  
-from backend.app.dependencies import get_search_service_dep, get_rag_pipeline_dep  # Changed to absolute import
+from backend.app.dependencies import get_search_service_dep, get_rag_pipeline_dep, initialize_on_startup  # Changed to absolute import
 from backend.app.api import search_endpoints, sentiment_endpoints
 import logging
 app = FastAPI()
@@ -32,8 +32,11 @@ async def read_root():
 async def startup_event():
     logging.info("Application starting up, checking dependencies...")
     try:
-        search_service = get_search_service_dep()
-        rag_pipeline = get_rag_pipeline_dep()
+        # initialize heavy clients in background to detect configuration errors early
+        await initialize_on_startup()
+        # also ensure core services can be constructed
+        _ = get_search_service_dep()
+        _ = get_rag_pipeline_dep()
         logging.info("Dependencies initialized successfully")
     except Exception as e:
         logging.error(f"Failed to initialize dependencies: {str(e)}")

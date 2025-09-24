@@ -1,5 +1,8 @@
-fastapi
-uvicorn
-google-cloud-bigquery
-langchain
-python-dotenv
+ fastapi
+ uvicorn
+ google-cloud-bigquery
+ google-cloud-aiplatform
+ google-cloud-storage
+ langchain
+ python-dotenv
+ vertexai

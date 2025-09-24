@@ -1,13 +1,14 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Send, Minimize2, MessageSquare } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { searchProducts } from "@/utils/api"
-import { ProductCard } from "./ChatProductCard"  // Import the new component
+import { ChatRecommendationCard } from "./ChatProductCard"  // Import the renamed component
+import { ProductRecommendation, Message } from "@/types"
 import { OrbitProgress } from "react-loading-indicators";
 
 
@@ -15,34 +16,7 @@ interface MaximizedChatboxProps {
   onMinimize: () => void
 }
 
-interface ProductReview {
-  content: string
-  rating: number
-  similarity: number
-  verified_purchase: boolean
-  user_id: string
-  timestamp: string
-}
-
-interface ProductRecommendation {
-  asin: string
-  product_title?: string
-  cleaned_item_description?: string
-  product_categories?: string
-  similarity: number
-  avg_rating: number
-  displayed_rating: number
-  combined_score: number
-  explanation: string
-  reviews?: ProductReview[]
-}
-
-interface Message {
-  id: number
-  text: string
-  sender: "user" | "ai"
-  productRecommendations?: ProductRecommendation[]
-}
+// Using shared types from `frontend/types.ts`
 
 const promptExamples = [
   "Find me a gift for a coffee lover.",
@@ -58,17 +32,17 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
   const [activeTab, setActiveTab] = useState("chat")
   const [isLoading, setIsLoading] = useState(false)
 
+  const scrollRef = useRef<HTMLDivElement | null>(null)
   useEffect(() => {
-    const scrollArea = document.getElementById("chat-scroll-area")
-    if (scrollArea) {
-      scrollArea.scrollTop = scrollArea.scrollHeight
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight
     }
   }, [messages])
 
   const handleSend = async () => {
     if (input.trim()) {
       const userMessage: Message = { id: messages.length + 1, text: input, sender: "user" }
-      setMessages((prev) => [...prev, userMessage])
+  setMessages((prev: Message[]) => [...prev, userMessage])
       setInput("")
       setIsLoading(true)
 
@@ -80,7 +54,7 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
           sender: "ai",
           productRecommendations: searchResults.results,
         }
-        setMessages((prev) => [...prev, aiMessage])
+  setMessages((prev: Message[]) => [...prev, aiMessage])
       } catch (error) {
         console.error("Error fetching product recommendations:", error)
         const errorMessage: Message = {
@@ -88,7 +62,7 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
           text: "I'm sorry, I couldn't fetch product recommendations at the moment. Please try again later.",
           sender: "ai",
         }
-        setMessages((prev) => [...prev, errorMessage])
+  setMessages((prev: Message[]) => [...prev, errorMessage])
       } finally {
         setIsLoading(false)
       }
@@ -136,8 +110,9 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
           )}
         </div>
         <TabsContent value="chat" className="flex-1 flex flex-col p-4">
-          <ScrollArea className="flex-1 pr-4" id="chat-scroll-area">
-            {messages.map((message) => (
+          <ScrollArea className="flex-1 pr-4">
+            <div ref={scrollRef} className="pr-4">
+            {messages.map((message: Message) => (
               <div key={message.id} className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"}`}>
                 <div
                   className={`inline-block p-3 rounded-lg ${
@@ -148,13 +123,14 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
                 </div>
                 {message.productRecommendations && (
                   <div className="mt-4 space-y-4">
-                    {message.productRecommendations.map((product, index) => (
-                      <ProductCard key={index} product={product} maxWidth="2xl" showFullButton={false} />
+                    {message.productRecommendations.map((product: ProductRecommendation) => (
+                      <ChatRecommendationCard key={product.asin || product.product_title} product={product} maxWidth="2xl" showFullButton={false} />
                     ))}
                   </div>
                 )}
               </div>
             ))}
+            </div>
             {isLoading && (
                 <div className="flex justify-center items-center py-4">
                   <OrbitProgress size="medium" color="#3b82f6" />
@@ -190,7 +166,7 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
             >
               <Input
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
                 placeholder="Type your message..."
                 className="flex-1"
                 disabled={isLoading}
