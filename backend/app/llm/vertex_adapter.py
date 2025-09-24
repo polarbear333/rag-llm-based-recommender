@@ -11,7 +11,7 @@ class VertexAILangChainWrapper(BaseLLM, Runnable):
     client: Any = Field(..., description="VertexAI client instance")
 
     def __init__(self, vertex_client: Any):
-        super().__init__(client=vertex_client)  # Pydantic v2 compliant initialization
+        super().__init__(client=vertex_client)  
 
     def _generate(
         self,
