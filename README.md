@@ -1,24 +1,54 @@
-# AI-Powered E-commerce Chatbot with Vector Search and LLM Integration
+# RAG‑based Semantic Retrieval Recommender for E-commerce
 
 ![E-commerce Chatbot](pages_files/images/product_recommendations.png)
 
 ## Overview
 
-This repo implements a full-stack AI-powered e-commerce recommendation system that combines Retrieval Augmented Generation (RAG), Large Language Models (LLMs), and sentiment analysis to create an intelligent shopping assistant. The system enhances the customer shopping experience by leveraging machine learning techniques to help users discover relevant products along with personalized content and recommendations.
+This repository implements a Retrieval-Augmented Generation (RAG) driven semantic recommender and information retrieval (IR) system built on Google Cloud infrastructure. Its purpose is to enhance the customer shopping experience by leveraging machine learning techniques to help users discover relevant products along with personalized content and recommendations. 
 
-The chatbot provides:
+The system combines:
 - Semantic product search based on natural language queries
 - Extraction of key product features
 - Sentiment analysis of product reviews
 - Contextual recommendations
 
+The primary goal is reproducible, high-throughput semantic retrieval for product recommendation and explainable, context-rich natural language responses.
+
 ![Website](pages_files/images/website.png)
 
 ![Chatbox](pages_files/images/chatbox.png)
 
-## System Architecture
+## Key Technical Highlights
 
-The project is built on Google Cloud Platform (GCP) with a microservices architecture:
+- **Hybrid retrieval**: ANN vector search + metadata filters (category, brand, price ranges) for high-precision recall.
+- **Vector store**: BigQuery vector columns and ScaNN for approximate nearest neighbor search; embeddings produced by configurable embedding model.
+- **RAG pipeline**: Multi-stage retrieval (candidate retrieval → re-ranking → context assembly → LLM prompt + generation). Supports chunking, passage-scoring, and grounding.
+- **Evaluation**: Offline IR metrics (MRR, nDCG@k) and online/latency measurements to balance retrieval depth vs. response time.
+
+### Data Pipeline
+
+- Uses Amazon Reviews 2023 dataset from UCSD McAuley Lab
+- Processes data with PySpark for ETL
+- Stores data in Google Cloud Storage and BigQuery
+- Generates vector embeddings using Vertex AI
+
+### Backend
+
+- Built with FastAPI for high-performance API endpoints
+- Implements vector search using BigQuery and ScaNN
+- Uses Retrieval Augmented Generation (RAG) with LangChain
+- Integrates with Vertex AI's Gemini-2.5-pro LLM
+
+### Frontend
+
+- Developed with React and Next.js
+- Features a chat interface for natural language queries
+- Displays product recommendations with extracted features
+- Uses dynamic image scraping for product visuals
+
+## File Structure
+
+The project is built on Google Cloud Platform (GCP) with the following file structure:
 
 ```
 llm-rag-based-ecommerce-recommender/
@@ -38,26 +68,30 @@ llm-rag-based-ecommerce-recommender/
 └── references.bib      # Bibliography for the report
 ```
 
-### Data Pipeline
+## High-level Architecture 
 
-- Uses Amazon Reviews 2023 dataset from UCSD McAuley Lab
-- Processes data with PySpark for ETL
-- Stores data in Google Cloud Storage and BigQuery
-- Generates vector embeddings using Vertex AI
+1. Data Ingestion & ETL
+   - Source: Amazon Reviews dataset (preprocessed by product and review).
+   - Pipeline: cleaning, normalization, deduplication, chunking long reviews into passages.
+   - Output: document records with metadata ([] `product_id`, `category`, `title`, `review_id`, `rating`, `timestamp`) and text passages.
 
-### Backend
+2. Embedding Generation
+   - Embedding model is configurable (Vertex AI embeddings by default). Typical embedding dim: 1,024 (configurable per model).
+   - Batched embedding generation with retry/backoff and idempotent writes to BigQuery.
 
-- Built with FastAPI for high-performance API endpoints
-- Implements vector search using BigQuery and ScaNN
-- Uses Retrieval Augmented Generation (RAG) with LangChain
-- Integrates with Vertex AI's Gemini-2.0-Flash LLM
+3. Vector Indexing & Storage
+   - Vectors stored as `ARRAY<FLOAT64>` in BigQuery tables with auxiliary metadata columns.
+   - ANN runtime: ScaNN used for approximate nearest neighbor retrieval where available; BigQuery vector search serves as the primary store for scale and analytical joins.
 
-### Frontend
+4. Retrieval Pipeline
+   - Stage 1 (Candidate Retrieval): Query → embedding → ANN k-nearest neighbors (k configurable, default 50) with optional metadata filters.
+   - Stage 2 (Re-ranking): Lightweight BM25-like scoring or cross-encoder scoring applied to top N candidates for precision (N ≪ k).
+   - Stage 3 (Context Assembly): Select top passages/products, deduplicate, and assemble prompt context with provenance (source ids & snippets).
+   - Stage 4 (Generation): Prompt the LLM (e.g., Gemini / other LLM) with structured context and instructions to generate recommendations and explanations.
 
-- Developed with React and Next.js
-- Features a chat interface for natural language queries
-- Displays product recommendations with extracted features
-- Uses dynamic image scraping for product visuals
+5. Serving & API
+   - FastAPI endpoints: `/search/semantic`, `/rag/query`, `/ingest`, `/metrics`.
+   - Response schema includes candidate ids, scores, provenance snippets, aggregated signals (avg rating, sentiment), and a `generated_answer` field when RAG is used.
 
 ## Installation and Setup
 
@@ -66,9 +100,11 @@ llm-rag-based-ecommerce-recommender/
 - Python 3.9+
 - Node.js 16+
 - Google Cloud Platform account with:
+  - Cloud Run enabled
   - BigQuery enabled
   - Vertex AI enabled
   - Cloud Storage configured
+
 
 ### Backend Setup
 
@@ -217,28 +253,45 @@ The system follows a microservices architecture with these key components:
    - Handles error states and loading indicators
    - Manages API response formatting
 
-This architecture ensures scalability, maintainability, and performance, allowing for independent scaling of components based on load.
+## Retrieval & Ranking Details
 
-## Evaluation Metrics
+- **Hybrid scoring**: final score = alpha * vector_score + beta * metadata_boost + gamma * recency_boost (weights tunable).
+- **Chunking**: Long reviews are chunked (stride overlap) to keep embedding contexts < model max tokens while preserving continuity.
+- **Deduplication**: Candidate deduplication by product id and by highly-similar passage similarity threshold.
+- **Reranking**: Optionally use a cross-encoder on top candidates for stronger relevance signals before generating.
 
-The system's performance is evaluated using:
+## Prompting & Grounding (RAG)
 
-- Mean Reciprocal Rank (MRR)
-- Normalized Discounted Cumulative Gain (nDCG@k)
-- Feature Extraction Precision and Recall
-- Sentiment Classification Accuracy
-- Response Latency
+- Prompts are programmatically assembled: instruction header, user query, ordered contextual snippets (with source markers), and generation constraints (format, length).
+- Grounding strategy: restrict the LLM to use only provided snippets for factual claims and include provenance links in responses.
+- Safety & hallucination mitigation: truncate/omit low-confidence sources; include fallback heuristics when context coverage is insufficient.
+
+## Configuration & Tuning
+
+- `k` (ANN candidates): larger `k` increases recall but costs latency and compute.
+- Re-ranker `N`: tuning tradeoff between precision and LLM prompt token cost.
+- Weights (alpha/beta/gamma): tuned on offline validation (MRR, nDCG) and online A/B tests.
+
+## Evaluation
+
+- Offline evaluation uses held-out queries and metrics:
+  - **MRR**: measures how high the first relevant item appears.
+  - **nDCG@k**: evaluates ranking quality with graded relevance.
+  - **Precision/Recall**: for extracted features and sentiment labels.
+- Latency and cost profiling: measure per-request latency (embedding + retrieval + re-ranking + LLM generation) and per-1000-queries cost estimate.
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please feel free to fork the repo and submit a pull request.
 
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## Acknowledgments
+## Acknowledgments & References
 
+- Retrieval-Augmented Generation (RAG) literature and LangChain examples.
+- BigQuery vector search and ScaNN documentation.
 - UCSD McAuley Lab for the Amazon Reviews 2023 dataset
 - Google Cloud Platform for infrastructure support
 - LangChain community for RAG implementation resources
