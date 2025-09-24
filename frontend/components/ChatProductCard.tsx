@@ -1,13 +1,13 @@
 // components/ProductCard.tsx
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { Star } from "lucide-react";
-import { OrbitProgress } from "react-loading-indicators";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { ProductDescription } from "./ProductDescription";
 import { parseMainDescription, parseAdditionalDetails, splitDescriptionToBullets } from "@/utils/descriptionParser";
 import ReactMarkdown from 'react-markdown';
-import axios from "axios";
+import rehypeSanitize from 'rehype-sanitize';
+import { ProductRecommendation } from "@/types";
 
 interface ProductReview {
   content: string;
@@ -16,19 +16,6 @@ interface ProductReview {
   verified_purchase: boolean;
   user_id: string;
   timestamp: string;
-}
-
-interface ProductRecommendation {
-  asin: string;
-  product_title?: string;
-  cleaned_item_description?: string;
-  product_categories?: string;
-  similarity: number;
-  avg_rating: number;
-  displayed_rating: number;
-  combined_score: number;
-  explanation: string;
-  reviews?: ProductReview[];
 }
 
 interface ProductCardProps {
@@ -44,48 +31,22 @@ const parseProductContent = (product: ProductRecommendation) => {
   return { title, description, categories };
 };
 
-export function ProductCard({ product, maxWidth = "2xl", showFullButton = true }: ProductCardProps) {
+export function ChatRecommendationCard({ product, maxWidth = "2xl", showFullButton = true }: ProductCardProps) {
   const { title } = parseProductContent(product);
   const mainDescription = parseMainDescription(product.cleaned_item_description || "");
   const additionalDetails = parseAdditionalDetails(product.cleaned_item_description || "");
   const features = splitDescriptionToBullets(product.explanation);
-  const [imageUrl, setImageUrl] = useState("/placeholder.svg");
-  const [imageError, setImageError] = useState(false);
-  const [isImageLoading, setIsImageLoading] = useState(true);
-
-  useEffect(() => {
-    const fetchImage = async () => {
-      setIsImageLoading(true);
-      try {
-        const response = await axios.get(`/api/scrape-image?asin=${product.asin}`);
-        setImageUrl(response.data.imageUrl);
-      } catch (error) {
-        console.error("Image fetch failed:", error);
-        setImageError(true);
-      }finally{
-        setIsImageLoading(false);
-      }
-    };
-    
-    if (product.asin) fetchImage();
-  }, [product.asin]);
+  const [imageUrl] = useState("/placeholder.svg");
 
   return (
     <Card className={`w-full max-w-${maxWidth} mx-auto mb-4`}>
       <CardContent className="p-6">
         <div className="aspect-video relative mb-4">
-            {isImageLoading ? (
-                <div className="w-full h-full flex justify-center items-center bg-gray-100 rounded-lg">
-                <OrbitProgress size="small" color="#3b82f6" />
-                </div>
-            ) : (
-                <img
-                src={imageUrl}
-                alt={title}
-                className="w-full h-full object-cover rounded-lg"
-                onError={() => setImageError(true)}
-                />
-            )}
+            <img
+              src={imageUrl}
+              alt={title}
+              className="w-full h-full object-cover rounded-lg"
+            />
         </div>
         <h3 className="text-xl font-semibold mb-2">{title}</h3>
         <div className="flex items-center mb-2">
@@ -112,7 +73,7 @@ export function ProductCard({ product, maxWidth = "2xl", showFullButton = true }
             <ul className="list-disc pl-5 space-y-1 text-base text-gray-800 font-medium">
               {features.map((feature, index) => (
                 <li key={index} className="text-gray-800">
-                  <ReactMarkdown>{feature}</ReactMarkdown>
+                  <ReactMarkdown rehypePlugins={[rehypeSanitize]}>{feature}</ReactMarkdown>
                 </li>
               ))}
             </ul>

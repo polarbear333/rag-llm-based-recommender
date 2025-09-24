@@ -1,13 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef, useEffect } from "react"
 import { X, Send, Maximize2, MessageCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { searchProducts } from "@/utils/api"
-import { ProductCard } from "./ChatProductCard"  // Import the new component
+import { ChatRecommendationCard } from "./ChatProductCard"  // Import the renamed component
+import { ProductRecommendation, Message } from "@/types"
 import { OrbitProgress } from "react-loading-indicators";
 
 interface ChatboxOverlayProps {
@@ -17,46 +18,20 @@ interface ChatboxOverlayProps {
   onOpen: () => void
 }
 
-interface ProductReview {
-  content: string
-  rating: number
-  similarity: number
-  verified_purchase: boolean
-  user_id: string
-  timestamp: string
-}
-
-interface ProductRecommendation {
-  asin: string
-  product_title?: string
-  cleaned_item_description?: string
-  product_categories?: string
-  similarity: number
-  avg_rating: number
-  displayed_rating: number
-  combined_score: number
-  explanation: string
-  reviews?: ProductReview[]
-}
-
-interface Message {
-  id: number
-  text: string
-  sender: "user" | "ai"
-  productRecommendations?: ProductRecommendation[]
-}
+// Using shared types from `frontend/types.ts`
 
 export function ChatboxOverlay({ onClose, onMaximize, isOpen, onOpen }: ChatboxOverlayProps) {
   const [messages, setMessages] = useState<Message[]>([
     { id: 1, text: "Hello! How can I assist you with your shopping today?", sender: "ai" },
   ])
+  const scrollRef = useRef<HTMLDivElement | null>(null)
   const [input, setInput] = useState("")
   const [isLoading, setIsLoading] = useState(false)
 
   const handleSend = async () => {
     if (input.trim()) {
       const userMessage: Message = { id: messages.length + 1, text: input, sender: "user" }
-      setMessages((prev) => [...prev, userMessage])
+  setMessages((prev: Message[]) => [...prev, userMessage])
       setInput("")
       setIsLoading(true)
 
@@ -68,7 +43,7 @@ export function ChatboxOverlay({ onClose, onMaximize, isOpen, onOpen }: ChatboxO
           sender: "ai",
           productRecommendations: searchResults.results,
         }
-        setMessages((prev) => [...prev, aiMessage])
+  setMessages((prev: Message[]) => [...prev, aiMessage])
       } catch (error) {
         console.error("Error fetching product recommendations:", error)
         const errorMessage: Message = {
@@ -76,7 +51,7 @@ export function ChatboxOverlay({ onClose, onMaximize, isOpen, onOpen }: ChatboxO
           text: "I'm sorry, I couldn't fetch product recommendations at the moment. Please try again later.",
           sender: "ai",
         }
-        setMessages((prev) => [...prev, errorMessage])
+  setMessages((prev: Message[]) => [...prev, errorMessage])
       } finally {
         setIsLoading(false)
       }
@@ -110,7 +85,8 @@ export function ChatboxOverlay({ onClose, onMaximize, isOpen, onOpen }: ChatboxO
       </CardHeader>
       <CardContent className="flex-grow overflow-hidden p-0">
         <ScrollArea className="h-full px-4">
-          {messages.map((message) => (
+          <div ref={scrollRef} className="h-full">
+          {messages.map((message: Message) => (
             <div key={message.id} className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"}`}>
               <div
                 className={`inline-block p-3 rounded-lg ${
@@ -122,13 +98,14 @@ export function ChatboxOverlay({ onClose, onMaximize, isOpen, onOpen }: ChatboxO
 
               {message.productRecommendations && message.productRecommendations.length > 0 && (
                 <div className="mt-3 space-y-2 text-left">
-                  {message.productRecommendations.map((product, index) => (
-                    <ProductCard key={index} product={product} />
+                  {message.productRecommendations.map((product: ProductRecommendation) => (
+                    <ChatRecommendationCard key={product.asin || product.product_title} product={product} />
                   ))}
                 </div>
               )}
             </div>
           ))}
+          </div>
               {/* Add loading indicator here */}
           {isLoading && (
             <div className="flex justify-center items-center py-4">
@@ -147,7 +124,7 @@ export function ChatboxOverlay({ onClose, onMaximize, isOpen, onOpen }: ChatboxO
         >
           <Input
             value={input}
-            onChange={(e) => setInput(e.target.value)}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setInput(e.target.value)}
             placeholder="Type your message..."
             disabled={isLoading}
           />

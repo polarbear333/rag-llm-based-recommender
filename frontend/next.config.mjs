@@ -20,7 +20,7 @@ const nextConfig = {
     webpackBuildWorker: true,
     parallelServerBuildTraces: true,
     parallelServerCompiles: true,
-    serverComponentsExternalPackages: ['@sparticuz/chromium', 'puppeteer-core']
+    serverComponentsExternalPackages: []
   },
 }
 
