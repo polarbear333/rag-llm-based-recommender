@@ -42,6 +42,14 @@ Refer to `cline_docs/productContext.md` for a detailed description of the projec
         *   `BIGQUERY_REVIEW_TABLE`: BigQuery table for reviews (default: "reviews")
         *   `LLM_MODEL_NAME`: Vertex AI LLM model name (default: "gemini-pro")
         *   `SENTIMENT_MODEL_NAME`: Sentiment analysis model name (optional)
+        *   `RAG_BATCHING_ENABLED`: Enable batched LLM calls (default: `true`)
+        *   `RAG_BATCH_SIZE`: Number of products per LLM request when batching (default: `3`)
+        *   `RAG_MAX_PROMPT_TOKENS`: Soft cap for prompt token estimation per batch (default: `5500`)
+        *   `RAG_MAX_REVIEW_CHARS`: Maximum characters per review included in prompts (default: `600`)
+
+## Batched LLM summaries
+
+The RAG pipeline now issues batched prompts to the LLM and validates responses with LangChain's `PydanticOutputParser`. Products are chunked according to the configured batch size and token budget. If the parser reports invalid JSON, the pipeline retries with stricter instructions before falling back to per-product generation. Structured analyses are attached to `/search` responses under the `analysis` field.
 
 ## Run Locally
 

@@ -2,43 +2,159 @@
 @tailwind components;
 @tailwind utilities;
 
+@font-face {
+  font-family: "Geist";
+  src: url("https://geist.vercel.app/api/font?name=Geist&weight=400") format("woff2");
+  font-weight: 400;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("https://geist.vercel.app/api/font?name=Geist&weight=500") format("woff2");
+  font-weight: 500;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("https://geist.vercel.app/api/font?name=Geist&weight=600") format("woff2");
+  font-weight: 600;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist";
+  src: url("https://geist.vercel.app/api/font?name=Geist&weight=700") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  src: url("https://geist.vercel.app/api/font?name=GeistMono&weight=500") format("woff2");
+  font-weight: 400 700;
+  font-display: swap;
+}
+
 @layer base {
   :root {
-    --background: 210 40% 98%;
-    --foreground: 210 40% 15%;
+    --font-sans: "Geist", "Geist Sans", "Geist Mono", ui-sans-serif, system-ui,
+      -apple-system, "Segoe UI", sans-serif;
+    --font-mono: "Geist Mono", ui-monospace, SFMono-Regular, Menlo, Monaco,
+      Consolas, "Liberation Mono", "Courier New", monospace;
 
+    --text-xs: 0.75rem;
+    --text-sm: 0.8125rem;
+    --text-base: 0.9375rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.25rem;
+    --text-2xl: 1.5rem;
+    --line-height-base: 1.45;
+
+    --surface: 0 0% 100%;
+    --muted-surface: 210 32% 97%;
+    --primary: 217 91% 60%;
+    --secondary: 215 38% 45%;
+    --text: 222 47% 12%;
+    --muted-text: 215 16% 46%;
+    --success: 142 72% 37%;
+    --warning: 36 93% 52%;
+    --danger: 0 84% 64%;
+
+    --card-radius: 0.5rem;
+    --shadow-sm: 0 2px 6px rgba(15, 23, 42, 0.04);
+
+    --background: 0 0% 100%;
+    --foreground: 222 47% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 210 40% 15%;
-
+    --card-foreground: 222 47% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 210 40% 15%;
-
-    --primary: 210 40% 15%;
-    --primary-foreground: 210 40% 98%;
-
-    --secondary: 213 93% 60%;
-    --secondary-foreground: 210 40% 98%;
-
-    --accent: 0 83% 71%;
-    --accent-foreground: 0 0% 100%;
-
-    --muted: 210 40% 95%;
-    --muted-foreground: 210 40% 45%;
-
-    --destructive: 0 84% 60%;
+    --popover-foreground: 222 47% 12%;
+    --muted: 210 32% 97%;
+    --muted-foreground: 215 16% 46%;
+    --destructive: 0 84% 64%;
     --destructive-foreground: 0 0% 100%;
+    --border: 214 32% 86%;
+    --input: 214 32% 86%;
+    --ring: 217 91% 60%;
+    --radius: var(--card-radius);
+  }
 
-    --border: 210 40% 90%;
-    --input: 210 40% 90%;
-    --ring: 210 40% 80%;
+  .dark {
+    --surface: 222 47% 10%;
+    --muted-surface: 215 19% 18%;
+    --primary: 217 91% 60%;
+    --secondary: 217 33% 80%;
+    --text: 0 0% 100%;
+    --muted-text: 215 16% 70%;
+    --success: 142 72% 40%;
+    --warning: 36 93% 52%;
+    --danger: 0 84% 64%;
 
-    --radius: 0.5rem;
+    --background: 222 47% 10%;
+    --foreground: 0 0% 100%;
+    --card: 222 47% 12%;
+    --card-foreground: 0 0% 100%;
+    --popover: 222 47% 12%;
+    --popover-foreground: 0 0% 100%;
+    --muted: 215 19% 18%;
+    --muted-foreground: 215 12% 70%;
+    --destructive: 0 84% 64%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 215 19% 24%;
+    --input: 215 19% 24%;
+    --ring: 217 91% 60%;
   }
 }
 
 @layer base {
+  * {
+    @apply border-border;
+  }
+
   body {
+    font-family: var(--font-sans);
+    font-size: var(--text-base);
+    line-height: var(--line-height-base);
+    color: hsl(var(--text));
+    background-color: hsl(var(--surface));
     @apply bg-background text-foreground;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-sans);
+    font-weight: 600;
+  }
+
+  .skeleton-shimmer {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .skeleton-shimmer::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.6) 50%,
+      rgba(255, 255, 255, 0) 100%
+    );
+    transform: translateX(-100%);
+    animation: skeleton-shimmer 1.6s infinite;
+  }
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
   }
 }
 
