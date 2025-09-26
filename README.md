@@ -20,15 +20,14 @@ A semantic retrieval recommender that provides suggestions based on user-driven 
 ![GitHub commit status](https://img.shields.io/github/checks-status/polarbear333/rag-llm-based-recommender/dae61c7570a85f23013da637cd7d9799cd2d08c3)
 ![GitHub License](https://img.shields.io/github/license/polarbear333/rag-llm-based-recommender)
 
-
-
 ## Overview
 
 This repository implements a Retrieval-Augmented Generation (RAG) driven semantic recommender and information retrieval (IR) system built on Google Cloud infrastructure. Its purpose is to enhance the customer shopping experience by leveraging machine learning techniques to help users discover relevant products along with personalized content and recommendations. 
 
 >A quick demo of showcasing how the recommender works:
+>
+![ezgif-11408d3f4a992c](https://github.com/user-attachments/assets/24c23681-bbb2-46d1-957a-0ff1972dcd88)
 
-![demo](https://i.imgur.com/ggaS4Rh.gif)
 
 The system combines:
 - Semantic product search based on natural language queries
