@@ -28,7 +28,7 @@ This repository implements a Retrieval-Augmented Generation (RAG) driven semanti
 
 >A quick demo of showcasing how the recommender works:
 
-<img alt="🦑" src="https://i.imgur.com/ggaS4Rh.gif">
+![demo](https://i.imgur.com/ggaS4Rh.gif)
 
 The system combines:
 - Semantic product search based on natural language queries
