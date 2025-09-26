@@ -36,6 +36,11 @@ class SellingPoint(BaseModel):
 MainSellingPoint = Union[SellingPoint, str]
 
 
+class KeySpec(BaseModel):
+    feature: str
+    detail: str
+
+
 class ProductAnalysis(BaseModel):
     asin: str
     main_selling_points: List[MainSellingPoint]
@@ -44,6 +49,7 @@ class ProductAnalysis(BaseModel):
     confidence: Optional[float] = None
     warnings: Optional[List[str]] = None
     notes: Optional[str] = None
+    key_specs: Optional[List[KeySpec]] = None
 
 
 class BatchProductAnalysis(BaseModel):
@@ -56,6 +62,7 @@ __all__ = [
     "ReviewHighlights",
     "SellingPoint",
     "MainSellingPoint",
+    "KeySpec",
     "ProductAnalysis",
     "BatchProductAnalysis",
 ]

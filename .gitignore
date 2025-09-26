@@ -22,3 +22,4 @@ node_modules
 todo.md
 fixes.md
 .pytest_cache
+backend/.venv

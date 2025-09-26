@@ -44,5 +44,5 @@ def _get_int_env(name: str, default: int) -> int:
 # RAG batching / prompt configuration
 RAG_BATCHING_ENABLED = _get_bool_env("RAG_BATCHING_ENABLED", True)
 RAG_BATCH_SIZE = _get_int_env("RAG_BATCH_SIZE", 3)
-RAG_MAX_PROMPT_TOKENS = _get_int_env("RAG_MAX_PROMPT_TOKENS", 5500)
-RAG_MAX_REVIEW_CHARS = _get_int_env("RAG_MAX_REVIEW_CHARS", 600)
+RAG_MAX_PROMPT_TOKENS = _get_int_env("RAG_MAX_PROMPT_TOKENS", 65536)
+RAG_MAX_REVIEW_CHARS = _get_int_env("RAG_MAX_REVIEW_CHARS", 4000)

@@ -1,10 +1,34 @@
 # RAG‑based Semantic Retrieval Recommender for E-commerce
 
-![E-commerce Chatbot](pages_files/images/product_recommendations.png)
+<div align="center">
+A semantic retrieval recommender that provides suggestions based on user-driven Amazon reviews.
+</div>
+
+<h3 align="center">
+   <a href=""><b>View Demo</b></a> &vert;
+   <a href=""><b>Whitepaper</b></a> &vert;
+   <a href=""><b>Documentation</b></a> &vert;
+   <a href=""><b>API Reference</b></a>
+</h3>
+
+![Static Badge](https://img.shields.io/badge/Python-3.9%2B-blue?style=flat&logo=python)
+![Static Badge](https://img.shields.io/badge/GCP-BigQuery-green?style=flat&logo=googlebigquery)
+![Static Badge](https://img.shields.io/badge/React-18.3.1-blue?style=flat&logo=react)
+![Codecov](https://img.shields.io/codecov/c/github/polarbear333/rag-llm-based-recommender)
+![GitHub commit activity](https://img.shields.io/github/commit-activity/m/polarbear333/rag-llm-based-recommender)
+![GitHub Issues or Pull Requests](https://img.shields.io/github/issues/polarbear333/rag-llm-based-recommender)
+![GitHub commit status](https://img.shields.io/github/checks-status/polarbear333/rag-llm-based-recommender/dae61c7570a85f23013da637cd7d9799cd2d08c3)
+![GitHub License](https://img.shields.io/github/license/polarbear333/rag-llm-based-recommender)
+
+
 
 ## Overview
 
 This repository implements a Retrieval-Augmented Generation (RAG) driven semantic recommender and information retrieval (IR) system built on Google Cloud infrastructure. Its purpose is to enhance the customer shopping experience by leveraging machine learning techniques to help users discover relevant products along with personalized content and recommendations. 
+
+>A quick demo of showcasing how the recommender works:
+
+<img alt="🦑" src="https://i.imgur.com/ggaS4Rh.gif">
 
 The system combines:
 - Semantic product search based on natural language queries
@@ -14,9 +38,7 @@ The system combines:
 
 The primary goal is reproducible, high-throughput semantic retrieval for product recommendation and explainable, context-rich natural language responses.
 
-![Website](pages_files/images/website.png)
-
-![Chatbox](pages_files/images/chatbox.png)
+![Website](pages_files/images/image.png)
 
 ## Key Technical Highlights
 
