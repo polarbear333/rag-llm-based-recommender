@@ -6,11 +6,13 @@ import { AlertTriangle, MessageCircleWarning, Quote, Smile, ThumbsDown } from "l
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { cn } from "@/lib/utils"
+// removed key-spec extraction and table display from Insights panel (handled in product card)
 import { ProductAnalysis, ProductReview, ReviewHighlightItem } from "@/types"
 
 interface ProductAnalysisPanelProps extends HTMLAttributes<HTMLDivElement> {
   analysis?: ProductAnalysis | null
   reviews?: ProductReview[] | null
+  description?: string | null
 }
 
 const take = <T,>(items: T[] | undefined | null, count: number): T[] => {
@@ -47,23 +49,12 @@ const formatConfidence = (value?: number | null) => {
   return `${Math.round(value)}%`
 }
 
-export function ProductAnalysisPanel({ analysis, reviews, className, ...props }: ProductAnalysisPanelProps) {
+export function ProductAnalysisPanel({ analysis, reviews, description, className, ...props }: ProductAnalysisPanelProps) {
   if (!analysis && (!reviews || reviews.length === 0)) {
     return null
   }
 
-  const sellingPoints = take(
-    analysis?.main_selling_points?.map((point) => {
-      if (!point) return null
-      const label = [point.title, point.description]
-        .filter((value) => Boolean(value && value.trim()))
-        .join(": ")
-
-      return label.trim() || null
-    })
-      .filter((value): value is string => Boolean(value)),
-    6
-  )
+  // key specs and selling points removed from Insights panel — these are shown on the product card
 
   const positiveHighlights = highlightContent(analysis?.review_highlights?.positive)
   const negativeHighlights = highlightContent(analysis?.review_highlights?.negative)
@@ -74,36 +65,25 @@ export function ProductAnalysisPanel({ analysis, reviews, className, ...props }:
   return (
     <section
       className={cn(
-        "mt-3 space-y-4 rounded-lg border border-border bg-card/70 p-4 shadow-sm",
+        "mt-4 space-y-5 rounded-2xl border border-border/70 bg-background/80 p-5 shadow-sm backdrop-blur",
         className
       )}
       aria-label="Product analysis details"
       {...props}
     >
-      {sellingPoints.length > 0 && (
-        <div>
-          <h4 className="text-sm font-semibold text-foreground">Selling points</h4>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {sellingPoints.map((point, idx) => (
-              <Badge key={`selling-point-${idx}`} variant="secondary" className="rounded-md px-2.5 py-1 text-xs font-medium">
-                {point}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      )}
+      {/* key specs and selling points intentionally omitted here */}
 
       {(positiveHighlights?.length || negativeHighlights?.length) && (
         <Fragment>
-          <Separator />
-          <div className="grid gap-3 md:grid-cols-2">
+          <Separator className="border-border/60" />
+          <div className="grid gap-4 md:grid-cols-2">
             {positiveHighlights?.length ? (
-              <div>
-                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <Smile className="h-4 w-4 text-success" aria-hidden="true" />
-                  Positive highlights
+              <div className="rounded-xl border border-success/20 bg-success/5 p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-success">
+                  <Smile className="h-4 w-4" aria-hidden="true" />
+                  What people love
                 </div>
-                <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+                <ul className="mt-3 space-y-2 text-sm leading-relaxed text-success/90">
                   {positiveHighlights.map((content, index) => (
                     <li key={`positive-${index}`} className="flex items-start gap-2">
                       <span className="mt-1 inline-flex h-1.5 w-1.5 rounded-full bg-success" aria-hidden="true" />
@@ -113,13 +93,14 @@ export function ProductAnalysisPanel({ analysis, reviews, className, ...props }:
                 </ul>
               </div>
             ) : null}
+
             {negativeHighlights?.length ? (
-              <div>
-                <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
-                  <ThumbsDown className="h-4 w-4 text-warning" aria-hidden="true" />
-                  Watch outs
+              <div className="rounded-xl border border-warning/25 bg-warning/10 p-4">
+                <div className="flex items-center gap-2 text-sm font-semibold text-warning">
+                  <ThumbsDown className="h-4 w-4" aria-hidden="true" />
+                  Things to consider
                 </div>
-                <ul className="mt-2 space-y-2 text-sm text-muted-foreground">
+                <ul className="mt-3 space-y-2 text-sm leading-relaxed text-warning/90">
                   {negativeHighlights.map((content, index) => (
                     <li key={`negative-${index}`} className="flex items-start gap-2">
                       <span className="mt-1 inline-flex h-1.5 w-1.5 rounded-full bg-warning" aria-hidden="true" />
@@ -135,9 +116,9 @@ export function ProductAnalysisPanel({ analysis, reviews, className, ...props }:
 
       {analysis?.best_for && (
         <Fragment>
-          <Separator />
-          <div className="flex items-start gap-2 text-sm text-foreground">
-            <MessageCircleWarning className="h-4 w-4 text-primary" aria-hidden="true" />
+          <Separator className="border-border/60" />
+          <div className="flex items-start gap-3 rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-primary">
+            <MessageCircleWarning className="mt-0.5 h-4 w-4" aria-hidden="true" />
             <div>
               <span className="font-semibold">Best for:</span> {analysis.best_for}
             </div>
@@ -147,16 +128,20 @@ export function ProductAnalysisPanel({ analysis, reviews, className, ...props }:
 
       {sampleReviews.length > 0 && (
         <Fragment>
-          <Separator />
+          <Separator className="border-border/60" />
           <div>
             <h4 className="flex items-center gap-2 text-sm font-semibold text-foreground">
-              <Quote className="h-4 w-4 text-secondary" aria-hidden="true" /> Sample reviews
+              <Quote className="h-4 w-4 text-secondary" aria-hidden="true" />
+              Snapshot from reviews
             </h4>
-            <div className="mt-2 space-y-3 text-sm text-muted-foreground">
+            <div className="mt-3 space-y-3 text-sm text-muted-foreground">
               {sampleReviews.map((review, index) => (
-                <blockquote key={`review-${index}`} className="rounded-md border border-border/60 bg-background/60 p-3">
+                <blockquote
+                  key={`review-${index}`}
+                  className="rounded-xl border border-border/70 bg-background/90 p-4 shadow-inner"
+                >
                   <p className="leading-relaxed">{review.content}</p>
-                  <footer className="mt-2 flex items-center justify-between text-xs text-muted-foreground/80">
+                  <footer className="mt-3 flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground/80">
                     <span className="font-medium">Rating: {review.rating ?? "NA"}</span>
                     {review.timestamp ? (
                       <time dateTime={review.timestamp}>
@@ -177,10 +162,10 @@ export function ProductAnalysisPanel({ analysis, reviews, className, ...props }:
 
       {(analysis?.warnings?.length || confidence) && (
         <Fragment>
-          <Separator />
+          <Separator className="border-border/60" />
           <div className="flex flex-col gap-3">
             {analysis?.warnings?.length ? (
-              <div className="flex items-start gap-2 text-sm text-danger">
+              <div className="flex items-start gap-2 rounded-xl border border-warning/40 bg-warning/10 p-4 text-sm text-warning">
                 <AlertTriangle className="mt-0.5 h-4 w-4" aria-hidden="true" />
                 <ul className="space-y-1">
                   {analysis.warnings.map((warning, index) => (

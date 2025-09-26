@@ -25,6 +25,11 @@ export interface MainSellingPoint {
   description?: string | null
 }
 
+export interface KeySpec {
+  feature?: string | null
+  detail?: string | null
+}
+
 export interface ProductAnalysis {
   asin?: string
   main_selling_points?: MainSellingPoint[]
@@ -33,6 +38,7 @@ export interface ProductAnalysis {
   confidence?: number | null
   warnings?: string[] | null
   notes?: string | null
+  key_specs?: KeySpec[]
 }
 
 export interface ProductRecommendation {
@@ -40,6 +46,10 @@ export interface ProductRecommendation {
   product_title?: string
   cleaned_item_description?: string | null
   product_categories?: string | string[]
+  product_image_url?: string | null
+  image_url?: string | null
+  image?: string | null
+  thumbnail_url?: string | null
   similarity?: number
   avg_rating?: number | null
   rating_count?: number | null
@@ -54,6 +64,14 @@ export interface Message {
   text: string
   sender: "user" | "ai"
   productRecommendations?: ProductRecommendation[]
+}
+
+export interface ChatSession {
+  id: string
+  title: string
+  messages: Message[]
+  createdAt: string
+  lastMessageAt: string
 }
 
 export default {} as {};

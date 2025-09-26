@@ -1,7 +1,7 @@
 "use client"
 
 import { type FormEvent, type KeyboardEvent, useEffect, useMemo, useRef, useState } from "react"
-import { Minimize2, MessageSquare, Send } from "lucide-react"
+import { Minimize2, MessageSquare, Send, Plus, Trash2 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -9,9 +9,21 @@ import { ScrollArea } from "@/components/ui/scroll-area"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { ChatRecommendationCard } from "@/components/ChatProductCard"
 import { searchProducts } from "@/utils/api"
 import { Message, ProductRecommendation } from "@/types"
+import { useChatSessionStore, initializeChatSession } from "@/lib/chat-session-store"
+import { useChatActions } from "@/lib/use-chat-actions"
 
 interface MaximizedChatboxProps {
   onMinimize: () => void
@@ -24,16 +36,27 @@ const promptExamples = [
 ]
 
 export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "Hello! How can I assist you with your shopping today?", sender: "ai" },
-  ])
-  const [input, setInput] = useState("")
+  const { 
+    input, 
+    isLoading, 
+    setInput, 
+    getCurrentMessages, 
+    sessions, 
+    currentSessionId 
+  } = useChatSessionStore()
+  const { sendMessage, startNewConversation, switchToChat, deleteChat } = useChatActions()
   const [activeTab, setActiveTab] = useState("chat")
-  const [isLoading, setIsLoading] = useState(false)
+  const [sessionToDelete, setSessionToDelete] = useState<string | null>(null)
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const textAreaRef = useRef<HTMLTextAreaElement | null>(null)
-  const messageCounter = useRef(2)
+
+  // Initialize session on mount
+  useEffect(() => {
+    initializeChatSession()
+  }, [])
+
+  const messages = getCurrentMessages()
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -41,35 +64,8 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
     }
   }, [messages, isLoading])
 
-  const appendMessage = (message: Omit<Message, "id">) => {
-    const newMessage = { id: messageCounter.current++, ...message }
-    setMessages((prev) => [...prev, newMessage])
-  }
-
   const handleSend = async () => {
-    const trimmed = input.trim()
-    if (!trimmed) return
-
-    appendMessage({ text: trimmed, sender: "user" })
-    setInput("")
-    setIsLoading(true)
-
-    try {
-      const searchResults = await searchProducts(trimmed)
-      appendMessage({
-        sender: "ai",
-        text: "Here are a few options that stood out:",
-        productRecommendations: searchResults.results ?? [],
-      })
-    } catch (error) {
-      console.error("Error fetching product recommendations", error)
-      appendMessage({
-        sender: "ai",
-        text: "I hit a snag fetching recommendations. Please try again in a moment.",
-      })
-    } finally {
-      setIsLoading(false)
-    }
+    await sendMessage(input)
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -89,15 +85,15 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
     return (
       <div
         key={message.id}
-        className={`flex flex-col gap-3 ${isUser ? "items-end" : "items-start"}`}
+        className={`flex flex-col gap-4 ${isUser ? "items-end" : "items-start"}`}
         role="group"
         aria-label={isUser ? "User message" : "Assistant message"}
       >
         <div
-          className={`max-w-3xl rounded-2xl px-4 py-3 text-sm leading-relaxed shadow-sm ${
+          className={`max-w-3xl rounded-3xl px-5 py-3.5 text-sm leading-relaxed shadow-sm transition ${
             isUser
-              ? "bg-primary text-primary-foreground"
-              : "bg-card/90 text-foreground ring-1 ring-border/60"
+              ? "bg-indigo-600 text-white"
+              : "bg-card/95 text-foreground ring-1 ring-border/60"
           }`}
         >
           {!isUser ? (
@@ -108,9 +104,9 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
           {message.text}
         </div>
         {message.productRecommendations && message.productRecommendations.length > 0 ? (
-          <div className="grid w-full gap-3 md:grid-cols-2" aria-label="Recommended products">
+          <div className="grid w-full gap-x-10 gap-y-10 justify-items-center items-start sm:grid-cols-1 md:grid-cols-2" aria-label="Recommended products">
             {message.productRecommendations.map((product: ProductRecommendation) => (
-              <ChatRecommendationCard key={product.asin || product.product_title} product={product} />
+              <ChatRecommendationCard key={product.asin || product.product_title} product={product} maxWidth="820px" />
             ))}
           </div>
         ) : null}
@@ -119,18 +115,27 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
   }
 
   const renderLoadingState = () => (
-    <div className="space-y-4" aria-live="polite">
+    <div className="space-y-5" aria-live="polite">
       <Skeleton shimmer className="h-16 w-3/5 rounded-2xl" />
-      <div className="grid gap-3 md:grid-cols-2">
-        {Array.from({ length: 2 }).map((_, index) => (
-          <div key={`loading-card-${index}`} className="space-y-3 rounded-lg border border-border/60 p-4">
-            <Skeleton shimmer className="h-16 w-full rounded-md" />
-            <Skeleton className="h-4 w-3/4" />
-            <div className="flex gap-2">
-              <Skeleton className="h-6 w-20 rounded-full" />
-              <Skeleton className="h-6 w-24 rounded-full" />
+      <div className="grid gap-y-8 gap-x-16 justify-items-center items-start sm:grid-cols-1 md:grid-cols-2">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <div
+            key={`loading-card-${index}`}
+            className="flex flex-col gap-4 rounded-2xl border border-border/70 bg-card/80 p-4 shadow-sm max-w-[820px] w-full"
+          >
+            <div className="flex items-start gap-3">
+              <Skeleton shimmer className="h-16 w-16 rounded-xl" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-4 w-3/4" />
+                <Skeleton className="h-3.5 w-1/2" />
+              </div>
             </div>
-            <Skeleton className="h-6 w-full" />
+            <Skeleton className="h-3.5 w-full" />
+            <div className="flex gap-2">
+              <Skeleton className="h-6 w-24 rounded-full" />
+              <Skeleton className="h-6 w-20 rounded-full" />
+            </div>
+            <Skeleton className="h-10 w-full rounded-lg" />
           </div>
         ))}
       </div>
@@ -149,13 +154,45 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
     []
   )
 
+  const handleNewChat = () => {
+    startNewConversation()
+  }
+
+  const handleSwitchToSession = (sessionId: string) => {
+    switchToChat(sessionId)
+  }
+
+  const handleDeleteSession = (sessionId: string, event: React.MouseEvent) => {
+    event.stopPropagation()
+    setSessionToDelete(sessionId)
+  }
+
+  const confirmDeleteSession = () => {
+    if (sessionToDelete) {
+      deleteChat(sessionToDelete)
+      setSessionToDelete(null)
+    }
+  }
+
+  const getSessionToDeleteTitle = () => {
+    if (!sessionToDelete) return ""
+    const session = sessions.find(s => s.id === sessionToDelete)
+    return session?.title || "Untitled Chat"
+  }
+
+  const cancelDeleteSession = () => {
+    setSessionToDelete(null)
+  }
+
+
+
   return (
     <div className="fixed inset-0 z-50 flex bg-background">
       <Tabs defaultValue="chat" className="flex-1">
         <div className="flex h-full">
-          <aside className="flex w-64 flex-col border-r bg-card/60 p-4">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold">AI Shopping Assistant</h2>
+          <aside className="flex w-64 flex-col border-r bg-card/60 p-3">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-base font-semibold">AI Shopping Assistant</h2>
               <Button variant="ghost" size="icon" onClick={onMinimize} aria-label="Minimize chat">
                 <Minimize2 className="h-4 w-4" />
               </Button>
@@ -170,48 +207,128 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
             </TabsList>
 
             {activeTab === "chat" ? (
-              <ScrollArea className="mt-4 flex-1">
-                <div className="space-y-3 text-sm text-muted-foreground">
-                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">
-                    Recent prompts
-                  </h3>
-                  {quickActions.map((action) => (
+              <ScrollArea className="mt-3 flex-1">
+                <div className="space-y-3">
+                  {/* New Chat Button */}
+                  <div className="space-y-2 mx-1">
                     <Button
-                      key={action.value}
-                      variant="ghost"
-                      className="w-full justify-start px-2 text-left text-sm"
+                      variant="outline"
+                      className="w-56 justify-start text-left h-9 px-3 rounded-md max-w-full"
                       type="button"
-                      onClick={() => {
-                        setInput(action.value)
-                        textAreaRef.current?.focus()
-                      }}
+                      onClick={handleNewChat}
                     >
-                      <MessageSquare className="mr-2 h-4 w-4 text-primary" aria-hidden="true" />
-                      {action.label}
+                      <Plus className="mr-2 h-4 w-4" aria-hidden="true" />
+                      New Chat
                     </Button>
-                  ))}
+                  </div>
+
+                  {/* Recent Chats */}
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">
+                      Recent Chats
+                    </h3>
+                    <div className="space-y-0.5">
+                      {sessions.length > 0 ? (
+                        sessions.slice(0, 8).map((session) => (
+                          <div
+                            key={session.id}
+                            className={`group flex items-center gap-1 rounded-md px-2 py-1 mx-1 hover:bg-muted/50 ${
+                              session.id === currentSessionId ? 'bg-muted' : ''
+                            }`}
+                          >
+                            <Button
+                              variant="ghost"
+                              className="w-48 justify-start px-1 text-left text-xs h-8 min-w-0 max-w-full"
+                              type="button"
+                              onClick={() => handleSwitchToSession(session.id)}
+                            >
+                              <MessageSquare className="mr-2 h-3 w-3 text-primary flex-shrink-0" aria-hidden="true" />
+                              <span className="truncate text-xs leading-tight">{session.title}</span>
+                            </Button>
+                            {sessions.length > 1 && (
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-6 w-6 opacity-60 hover:opacity-100 hover:bg-destructive/10 hover:text-destructive transition-all flex-shrink-0"
+                                onClick={(e) => handleDeleteSession(session.id, e)}
+                                title="Delete chat"
+                              >
+                                <Trash2 className="h-2.5 w-2.5" />
+                              </Button>
+                            )}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-muted-foreground text-xs px-2 py-2">
+                          No chats yet
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Example Prompts */}
+                  <div className="space-y-2">
+                    <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">
+                      Example Prompts
+                    </h3>
+                    <div className="space-y-0.5">
+                      {quickActions.map((action) => (
+                        <div key={action.value} className="mx-1">
+                          <Button
+                            variant="ghost"
+                            className="w-56 justify-start px-2 text-left text-xs h-8 min-w-0 rounded-md max-w-full"
+                            type="button"
+                            onClick={() => {
+                              setInput(action.value)
+                              textAreaRef.current?.focus()
+                            }}
+                          >
+                            <MessageSquare className="mr-2 h-2.5 w-2.5 text-muted-foreground flex-shrink-0" aria-hidden="true" />
+                            <span className="truncate text-xs leading-tight">{action.label}</span>
+                          </Button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </ScrollArea>
             ) : (
-              <div className="mt-6 space-y-2 text-sm text-muted-foreground">
-                <p>Settings coming soon. We&apos;ll let you tailor tone, filters, and notifications.</p>
+              <div className="mt-6 space-y-4 text-sm">
+                <div className="space-y-2">
+                  <h3 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground/80">
+                    Chat Management
+                  </h3>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleNewChat}
+                    className="w-full justify-start text-left"
+                  >
+                    <Plus className="mr-2 h-4 w-4" />
+                    Start New Chat
+                  </Button>
+                </div>
+                <div className="space-y-2 text-muted-foreground">
+                  <p>Chat history is stored in your current browser session and will be cleared when you close the tab.</p>
+                  <p>More settings coming soon. We&apos;ll let you tailor tone, filters, and notifications.</p>
+                </div>
               </div>
             )}
           </aside>
 
-          <div className="flex flex-1 flex-col p-6">
+          <div className="flex flex-1 flex-col bg-muted/20 p-6">
             <ScrollArea className="flex-1 pr-4">
               <div
                 ref={scrollRef}
                 role="log"
                 aria-live="polite"
                 aria-relevant="additions text"
-                className="space-y-6 pr-4"
+                className="space-y-8 pr-4"
               >
                 {messages.map(renderMessageBubble)}
                 {isLoading ? renderLoadingState() : null}
                 {messages.length === 1 && !isLoading ? (
-                  <div className="rounded-lg border border-dashed border-border/70 bg-muted/40 p-4 text-sm text-muted-foreground">
+                  <div className="rounded-xl border border-dashed border-border/70 bg-card/80 p-5 text-sm text-muted-foreground">
                     <p className="font-medium text-foreground">Try asking:</p>
                     <ul className="mt-2 grid gap-2 sm:grid-cols-2">
                       {promptExamples.map((example) => (
@@ -235,20 +352,20 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
               </div>
             </ScrollArea>
 
-            <form onSubmit={handleSubmit} className="mt-6 space-y-3" aria-label="Send a message">
+            <form onSubmit={handleSubmit} className="mt-6 space-y-4" aria-label="Send a message">
               <div className="flex flex-wrap gap-2">
                 {quickActions.map((action) => (
                   <Badge
                     key={`chip-${action.value}`}
                     variant="outline"
-                    className="cursor-pointer rounded-full px-3 py-1 text-xs"
+                    className="cursor-pointer rounded-full border-border/60 px-3 py-1 text-xs font-medium transition hover:border-primary/40 hover:bg-primary/10"
                     role="button"
                     tabIndex={0}
                     onClick={() => {
                       setInput(action.value)
                       textAreaRef.current?.focus()
                     }}
-                    onKeyDown={(event) => {
+                    onKeyDown={(event: KeyboardEvent<HTMLDivElement>) => {
                       if (event.key === "Enter" || event.key === " ") {
                         event.preventDefault()
                         setInput(action.value)
@@ -261,8 +378,7 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
                   </Badge>
                 ))}
               </div>
-
-              <div className="flex flex-col gap-3 rounded-2xl border border-border/80 bg-card/80 p-4 shadow-sm">
+              <div className="flex flex-col gap-3 rounded-3xl border border-border/80 bg-card/90 p-5 shadow-lg">
                 <Textarea
                   ref={textAreaRef}
                   value={input}
@@ -273,11 +389,16 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
                   rows={3}
                   maxLength={600}
                   disabled={isLoading}
-                  className="min-h-[96px] resize-none border-0 bg-transparent text-sm shadow-none focus-visible:ring-0"
+                  className="min-h-[96px] resize-none border-0 bg-transparent text-sm leading-relaxed shadow-none focus-visible:ring-0"
                 />
-                <div className="flex items-center justify-between text-xs text-muted-foreground">
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs text-muted-foreground">
                   <span>Press Enter to send · Shift + Enter for a new line</span>
-                  <Button type="submit" size="sm" disabled={isLoading || !input.trim()}>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={isLoading || !input.trim()}
+                    className="shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  >
                     <Send className="mr-2 h-4 w-4" />
                     Send
                   </Button>
@@ -289,6 +410,27 @@ export function MaximizedChatbox({ onMinimize }: MaximizedChatboxProps) {
 
         <TabsContent value="settings" className="hidden" />
       </Tabs>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!sessionToDelete} onOpenChange={() => setSessionToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Chat</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete <strong>"{getSessionToDeleteTitle()}"</strong>? This action cannot be undone and all messages in this conversation will be permanently removed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel onClick={cancelDeleteSession}>Cancel</AlertDialogCancel>
+            <AlertDialogAction 
+              onClick={confirmDeleteSession}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete Chat
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

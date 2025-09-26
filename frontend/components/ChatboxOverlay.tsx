@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea"
 import { ChatRecommendationCard } from "@/components/ChatProductCard"
 import { searchProducts } from "@/utils/api"
 import { Message, ProductRecommendation } from "@/types"
+import { useChatSessionStore, initializeChatSession } from "@/lib/chat-session-store"
+import { useChatActions } from "@/lib/use-chat-actions"
 
 interface ChatboxOverlayProps {
   onClose: () => void
@@ -27,15 +29,18 @@ const quickPrompts = [
 ]
 
 export function ChatboxOverlay({ onClose, onMaximize, isOpen, onOpen }: ChatboxOverlayProps) {
-  const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "Hi! Ask me for product ideas or comparisons anytime.", sender: "ai" },
-  ])
-  const [input, setInput] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
+  const { input, isLoading, setInput, getCurrentMessages } = useChatSessionStore()
+  const { sendMessage } = useChatActions()
 
   const scrollRef = useRef<HTMLDivElement | null>(null)
   const textareaRef = useRef<HTMLTextAreaElement | null>(null)
-  const idCounter = useRef(2)
+
+  // Initialize session on mount
+  useEffect(() => {
+    initializeChatSession()
+  }, [])
+
+  const messages = getCurrentMessages()
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -43,35 +48,8 @@ export function ChatboxOverlay({ onClose, onMaximize, isOpen, onOpen }: ChatboxO
     }
   }, [messages, isLoading])
 
-  const appendMessage = (message: Omit<Message, "id">) => {
-    const nextMessage = { id: idCounter.current++, ...message }
-    setMessages((prev) => [...prev, nextMessage])
-  }
-
   const handleSend = async () => {
-    const trimmed = input.trim()
-    if (!trimmed) return
-
-    appendMessage({ sender: "user", text: trimmed })
-    setInput("")
-    setIsLoading(true)
-
-    try {
-      const response = await searchProducts(trimmed)
-      appendMessage({
-        sender: "ai",
-        text: "Here&apos;s what I found for you:",
-        productRecommendations: response.results ?? [],
-      })
-    } catch (error) {
-      console.error("Error fetching product recommendations", error)
-      appendMessage({
-        sender: "ai",
-        text: "Something went wrong while searching. Please try again shortly.",
-      })
-    } finally {
-      setIsLoading(false)
-    }
+    await sendMessage(input)
   }
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -103,7 +81,7 @@ export function ChatboxOverlay({ onClose, onMaximize, isOpen, onOpen }: ChatboxO
   if (!isOpen) {
     return (
       <Button
-        className="fixed bottom-4 right-4 flex items-center gap-2 rounded-full bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground shadow-lg transition hover:bg-primary/90"
+        className="fixed bottom-4 right-4 flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold shadow-lg transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 bg-indigo-600 text-white hover:bg-indigo-700"
         onClick={onOpen}
         aria-label="Open AI shopping assistant"
       >
@@ -133,17 +111,17 @@ export function ChatboxOverlay({ onClose, onMaximize, isOpen, onOpen }: ChatboxO
             role="log"
             aria-live="polite"
             aria-relevant="additions text"
-            className="space-y-4"
+            className="space-y-6"
           >
             {messages.map((message) => {
               const isUser = message.sender === "user"
               return (
-                <div key={message.id} className={`flex flex-col gap-2 ${isUser ? "items-end" : "items-start"}`}>
+                <div key={message.id} className={`flex flex-col gap-4 ${isUser ? "items-end" : "items-start"}`}>
                   <div
-                    className={`max-w-[85%] rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed shadow-sm ${
+                    className={`max-w-3xl rounded-3xl px-5 py-3.5 text-sm leading-relaxed shadow-sm transition ${
                       isUser
-                        ? "bg-primary text-primary-foreground"
-                        : "bg-card/90 text-foreground ring-1 ring-border/70"
+                        ? "bg-indigo-600 text-white"
+                        : "bg-card/95 text-foreground ring-1 ring-border/70"
                     }`}
                   >
                     {!isUser ? (
@@ -155,7 +133,9 @@ export function ChatboxOverlay({ onClose, onMaximize, isOpen, onOpen }: ChatboxO
                   </div>
 
                   {message.productRecommendations?.length ? (
-                    <div className="w-full space-y-2">
+                    // make cards smaller by giving them an explicit maxWidth and
+                    // increase gap so the two cards are more visually separated
+                    <div className="grid w-full gap-6 sm:grid-cols-1 md:grid-cols-2">
                       {message.productRecommendations.map((product: ProductRecommendation) => (
                         <ChatRecommendationCard key={product.asin || product.product_title} product={product} />
                       ))}
@@ -212,10 +192,15 @@ export function ChatboxOverlay({ onClose, onMaximize, isOpen, onOpen }: ChatboxO
             />
             <div className="mt-2 flex items-center justify-between text-[0.7rem] text-muted-foreground">
               <span>Enter to send · Shift + Enter for a new line</span>
-              <Button type="submit" size="sm" disabled={isLoading || !input.trim()}>
-                <Send className="mr-2 h-4 w-4" />
-                Send
-              </Button>
+                  <Button
+                    type="submit"
+                    size="sm"
+                    disabled={isLoading || !input.trim()}
+                    className="shadow-sm bg-indigo-600 text-white hover:bg-indigo-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500"
+                  >
+                    <Send className="mr-2 h-4 w-4" />
+                    Send
+                  </Button>
             </div>
           </div>
         </form>
