@@ -3,6 +3,9 @@
  google-cloud-bigquery
  google-cloud-aiplatform
  google-cloud-storage
- langchain
+ langchain>=0.1.14
  python-dotenv
  vertexai
+ tiktoken
+ pytest
+ pytest-asyncio

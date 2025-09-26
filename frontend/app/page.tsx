@@ -15,13 +15,19 @@ export default function Home() {
   const [isChatboxMaximized, setIsChatboxMaximized] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
-  const handleOpenChatbox = () => {
+  // Handler when opening the small overlay chatbox (used by the overlay itself)
+  const handleOpenOverlayChatbox = () => {
     setIsChatboxOpen(true)
+  }
+
+  // Handler for the Header button: open the maximized chatbox directly
+  const handleOpenMaximizedFromHeader = () => {
+    setIsChatboxMaximized(true)
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <Header onOpenChatbox={handleOpenChatbox} onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
+  <Header onOpenChatbox={handleOpenMaximizedFromHeader} onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)} />
       <Sidebar isOpen={isSidebarOpen} />
       <main className={`transition-all duration-300 ${isSidebarOpen ? "ml-64" : ""}`}>
         <HeroBanner />
@@ -52,7 +58,7 @@ export default function Home() {
         onClose={() => setIsChatboxOpen(false)}
         onMaximize={() => setIsChatboxMaximized(true)}
         isOpen={isChatboxOpen}
-        onOpen={handleOpenChatbox}
+        onOpen={handleOpenOverlayChatbox}
       />
       {isChatboxMaximized && <MaximizedChatbox onMinimize={() => setIsChatboxMaximized(false)} />}
     </div>

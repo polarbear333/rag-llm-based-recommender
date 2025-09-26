@@ -1,5 +1,4 @@
-import { type Config } from "tailwindcss"
-
+/** @type {import('tailwindcss').Config} */
 const config = {
   darkMode: ["class"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}", "*.{js,ts,jsx,tsx,mdx}"],
@@ -12,6 +11,10 @@ const config = {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["var(--font-sans)", "ui-sans-serif", "system-ui"],
+        mono: ["var(--font-mono)", "ui-monospace", "SFMono-Regular"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -42,6 +45,18 @@ const config = {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "#ffffff",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--text))",
+        },
+        danger: {
+          DEFAULT: "hsl(var(--danger))",
+          foreground: "#ffffff",
+        },
         popover: {
           DEFAULT: "hsl(var(--popover))",
           foreground: "hsl(var(--popover-foreground))",
@@ -51,9 +66,17 @@ const config = {
           foreground: "hsl(var(--card-foreground))",
         },
       },
+      boxShadow: {
+        card: "var(--shadow-sm)",
+      },
+      borderRadius: {
+        lg: "var(--card-radius)",
+        md: "calc(var(--card-radius) - 2px)",
+        sm: "calc(var(--card-radius) - 4px)",
+      },
     },
   },
-} satisfies Config
+}
 
 export default config
 
